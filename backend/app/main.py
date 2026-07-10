@@ -148,7 +148,9 @@ async def analyze_document(
                 "liabilities": extracted["liabilities"],
                 "equity": extracted["equity"],
                 "revenue": extracted["revenue"],
+                "expenses": extracted.get("expenses", 0.0),
                 "net_income": extracted["net_income"],
+                "interest_expense": extracted.get("interest_expense", 0.0),
                 "working_capital": extracted["working_capital"],
                 "cash": extracted["cash"],
                 "retained_earnings": extracted["retained_earnings"]

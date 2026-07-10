@@ -107,7 +107,7 @@ def retrieve_sector_benchmark(sector: str) -> str:
     """
     if not os.path.exists(BENCHMARKS_PATH):
         print(f"Warning: benchmarks.json not found at {BENCHMARKS_PATH}. Using Fintech defaults.")
-        from damodaran_downloader import DEFAULT_BENCHMARKS
+        from backend.app.utils.damodaran_downloader import DEFAULT_BENCHMARKS
         benchmarks_data = DEFAULT_BENCHMARKS
     else:
         with open(BENCHMARKS_PATH, "r", encoding="utf-8") as f:
@@ -176,7 +176,7 @@ def generate_offline_narrative(company_name: str, sector: str, ratios: Dict[str,
         with open(BENCHMARKS_PATH, "r", encoding="utf-8") as f:
             benchmarks_data = json.load(f)
     except Exception:
-        from damodaran_downloader import DEFAULT_BENCHMARKS
+        from backend.app.utils.damodaran_downloader import DEFAULT_BENCHMARKS
         benchmarks_data = DEFAULT_BENCHMARKS
         
     matched_sector = "Fintech"

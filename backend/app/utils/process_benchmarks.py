@@ -20,7 +20,7 @@ def load_existing_benchmarks() -> Dict[str, Any]:
             print(f"Error loading benchmarks: {e}")
             
     # Fallback template
-    from damodaran_downloader import DEFAULT_BENCHMARKS
+    from backend.app.utils.damodaran_downloader import DEFAULT_BENCHMARKS
     return DEFAULT_BENCHMARKS.copy()
 
 def process_world_bank_data(benchmarks: Dict[str, Any]) -> Dict[str, Any]:

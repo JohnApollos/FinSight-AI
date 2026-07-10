@@ -21,7 +21,7 @@ def generate_comparison_chart(company_ratios: Dict[str, float], sector: str) -> 
         with open(BENCHMARKS_PATH, "r", encoding="utf-8") as f:
             benchmarks_data = json.load(f)
     except Exception:
-        from damodaran_downloader import DEFAULT_BENCHMARKS
+        from backend.app.utils.damodaran_downloader import DEFAULT_BENCHMARKS
         benchmarks_data = DEFAULT_BENCHMARKS
 
     matched_sector = "Fintech"
@@ -216,7 +216,7 @@ def compile_pdf_report(
         with open(BENCHMARKS_PATH, "r", encoding="utf-8") as f:
             benchmarks_data = json.load(f)
     except Exception:
-        from damodaran_downloader import DEFAULT_BENCHMARKS
+        from backend.app.utils.damodaran_downloader import DEFAULT_BENCHMARKS
         benchmarks_data = DEFAULT_BENCHMARKS
         
     matched_sector = "Fintech"
