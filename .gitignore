@@ -18,7 +18,7 @@ Thumbs.db
 # Project generated data and models
 backend/data/benchmarks.json
 backend/data/sec_reference_data.csv
-backend/data/mlflow.db
+mlflow.db
 backend/models/isolation_forest.pkl
 mlruns/
 backend/data/chroma/
