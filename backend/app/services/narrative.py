@@ -2,7 +2,7 @@ import os
 import json
 from typing import Dict, Any, Optional
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.prompts import PromptTemplate
+from langchain_core.prompts import PromptTemplate
 
 BENCHMARKS_PATH = "backend/data/benchmarks.json"
 CHROMA_PATH = "backend/data/chroma"

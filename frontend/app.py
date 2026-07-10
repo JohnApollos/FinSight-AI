@@ -18,24 +18,34 @@ API_URL = os.getenv("BACKEND_API_URL", "http://127.0.0.1:8000")
 # Custom CSS for rich aesthetics and clean cards
 st.markdown("""
 <style>
+    /* Premium glassmorphic card design */
     .metric-card {
-        background-color: #f8fafc;
-        border: 1px solid #e2e8f0;
-        padding: 18px;
+        background-color: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        border-top: 4px solid #6366f1; /* Neon Indigo Accent */
+        padding: 20px;
         border-radius: 10px;
         margin-bottom: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        border-color: rgba(99, 102, 241, 0.4);
     }
     .metric-title {
-        font-size: 13px;
-        color: #64748b;
+        font-size: 11px;
+        color: #94a3b8;
         font-weight: 600;
         text-transform: uppercase;
+        letter-spacing: 0.5px;
         margin-bottom: 6px;
     }
     .metric-value {
-        font-size: 26px;
+        font-size: 24px;
         font-weight: 700;
-        color: #1e293b;
+        color: #f1f5f9;
     }
     .status-green { color: #10b981; font-weight: 700; }
     .status-amber { color: #f59e0b; font-weight: 700; }
@@ -44,9 +54,15 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # App Sidebar
-st.sidebar.image("https://img.icons8.com/color/96/combo-chart--v1.png", width=80)
-st.sidebar.title("FinSight AI")
-st.sidebar.write("Intelligent Financial Risk & Solvency Engine")
+st.sidebar.image("https://img.icons8.com/color/96/combo-chart--v1.png", width=60)
+st.sidebar.markdown("""
+<h2 style="font-family: 'Inter', sans-serif; font-weight: 700; font-size: 22px; margin-top: 10px; margin-bottom: 2px;">
+    FinSight AI
+</h2>
+<p style="color: #64748b; font-family: 'Inter', sans-serif; font-size: 12px; margin-bottom: 20px;">
+    Intelligent Financial Risk & Solvency Engine
+</p>
+""", unsafe_allow_html=True)
 
 st.sidebar.divider()
 
@@ -92,9 +108,17 @@ st.sidebar.info(
     "Compliance: FinSight AI metrics are advisory. Decisions require human credit underwriting controls."
 )
 
-# Main Page Header
-st.title("📊 FinSight AI — Risk Intelligence Dashboard")
-st.write("Ingest financial statements, compute solvency metrics, score anomalies, and synthesize credit narratives instantly.")
+# Main Page Header (Premium Gradient Banner)
+st.markdown("""
+<div style="background: linear-gradient(135deg, #1e293b, #0f172a); padding: 30px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+    <h1 style="color: #ffffff; margin: 0; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 28px; letter-spacing: -0.5px;">
+        FinSight AI &mdash; Risk Intelligence Dashboard
+    </h1>
+    <p style="color: #94a3b8; margin: 6px 0 0 0; font-family: 'Inter', sans-serif; font-size: 14px;">
+        Ingest financial statements, compute solvency metrics, score anomalies, and synthesize credit narratives instantly.
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
 st.divider()
 
@@ -145,7 +169,7 @@ if uploaded_file is not None:
                         pdf_resp = requests.post(f"{API_URL}/report", files=files_report, data=report_data)
                         if pdf_resp.status_code == 200:
                             st.download_button(
-                                label="📥 Download Audit-Ready PDF Report",
+                                label="Download Audit-Ready PDF Report",
                                 data=pdf_resp.content,
                                 file_name=f"FinSight_Audit_Report_{result['company_name'].replace(' ', '_')}.pdf",
                                 mime="application/pdf",
@@ -204,16 +228,16 @@ if uploaded_file is not None:
                 
                 # Check for double-entry discrepancies
                 if not result["validation"]["is_valid"]:
-                    st.warning("⚠️ Core Statement Validation Warnings Found:")
+                    st.warning("Core Statement Validation Warnings Found:")
                     for warn in result["validation"]["warnings"]:
                         st.write(f"- {warn}")
                 
                 # --- TAB LAYOUT ---
                 tab_dash, tab_narrative, tab_shap, tab_raw = st.tabs([
-                    "📈 Ratio Analysis Dashboard", 
-                    "📝 AI Credit Narrative", 
-                    "🔍 Anomaly (SHAP) Diagnostics", 
-                    "📋 Raw Financial Metadata"
+                    "Ratio Analysis Dashboard", 
+                    "AI Credit Narrative", 
+                    "Anomaly (SHAP) Diagnostics", 
+                    "Raw Financial Metadata"
                 ])
                 
                 with tab_dash:
