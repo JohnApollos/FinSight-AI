@@ -4,7 +4,7 @@ This document details the engineering architecture, mathematical formulas, and m
 
 ---
 
-## 📐 System Pipeline Architecture
+## System Pipeline Architecture
 
 FinSight AI is structured as a decoupled service pipeline, ensuring clean boundaries between ingestion, ratio calculation, anomaly detection, semantic context retrieval, and report compilation.
 
@@ -54,7 +54,7 @@ FinSight AI is structured as a decoupled service pipeline, ensuring clean bounda
 
 ---
 
-## 🧮 Solvency & Credit Risk Formulations
+## Solvency & Credit Risk Formulations
 
 Traditional credit scoring models rely on linear weighting. FinSight AI implements two distinct academic solvency models to accommodate different corporate structures:
 
@@ -85,7 +85,7 @@ $$\text{Z''-Score} = 6.56(X_1) + 3.26(X_2) + 6.72(X_3) + 1.05(X_4)$$
 
 ---
 
-## 🤖 Machine Learning Outlier Detection & SHAP Explainability
+## Machine Learning Outlier Detection & SHAP Explainability
 
 ### Unsupervised Isolation Forest
 Rather than flagging credit risk purely on rigid, static ratio limits, FinSight AI trains a scikit-learn `IsolationForest` on a multi-dimensional reference baseline of **51 annual corporate records** representing "healthy" companies (designed to scale).
@@ -101,7 +101,7 @@ To avoid "black box" machine learning in compliance-driven banking, we integrate
 
 ---
 
-## 🛡️ Anti-Hallucination validation checks
+## Anti-Hallucination validation checks
 
 To solve LLM extraction inaccuracies, the ingestion service passes extracted figures through an automated double-entry validator:
 1. **Balance Sheet Equation**:

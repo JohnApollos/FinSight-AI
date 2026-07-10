@@ -4,7 +4,7 @@ This document outlines the Model Risk Management (MRM) frameworks, data governan
 
 ---
 
-## 🏛️ Model Governance Framework
+## Model Governance Framework
 
 Traditional financial institutions and credit departments operate under strict regulatory guidelines (e.g., US SR 11-7 / OCC 2011-12 on Model Risk Management). Unsupervised machine learning models and large language models (LLMs) pose unique governance risks. FinSight AI addresses these issues using a four-tier risk containment architecture:
 
@@ -21,7 +21,7 @@ Traditional financial institutions and credit departments operate under strict r
 
 ---
 
-## 🛡️ Anti-Hallucination & Ingestion Controls
+## Anti-Hallucination & Ingestion Controls
 
 Large Language Models (LLMs) excel at processing unstructured text but are prone to calculation errors or column-shifting when reading tables. FinSight AI enforces strict data validation controls:
 
@@ -36,7 +36,7 @@ Large Language Models (LLMs) excel at processing unstructured text but are prone
 
 ---
 
-## 🔍 Model Explainability & Transparency (XAI)
+## Model Explainability & Transparency (XAI)
 
 Unsupervised anomaly models can flag credit profiles without explaining why. This violates fair-lending rules and audit standards. We solve this by integrating **SHAP (Shapley Additive Explanations)** on top of our Isolation Forest:
 
@@ -45,7 +45,7 @@ Unsupervised anomaly models can flag credit profiles without explaining why. Thi
 
 ---
 
-## 📊 Telemetry and Audit Registry
+## Telemetry and Audit Registry
 
 FinSight AI utilizes an immutable experiment registry backed by **MLflow** and a local SQLite database:
 - **Reproducibility**: Every upload logs the file hash, LLM parameters, calculated ratios, and solvency classifications.
@@ -53,7 +53,7 @@ FinSight AI utilizes an immutable experiment registry backed by **MLflow** and a
 
 ---
 
-## ⚖️ Liability Disclaimer & Human-in-the-Loop Controls
+## Liability Disclaimer & Human-in-the-Loop Controls
 
 FinSight AI is designed as a **Human-in-the-Loop decision support system** rather than an automated credit execution model. The generated PDF report embeds the following regulatory compliance notice:
 

@@ -4,7 +4,7 @@ This document describes how to configure, bootstrap, test, and run **FinSight AI
 
 ---
 
-## 🛠️ Environment Configuration
+## Environment Configuration
 
 The application reads configuration parameters from a local `.env` file. 
 
@@ -25,7 +25,7 @@ The application reads configuration parameters from a local `.env` file.
 
 ---
 
-## 🏃 Launch Instructions
+## Launch Instructions
 
 ### Option A: Local Execution (PowerShell Setup)
 We provide a convenience PowerShell wrapper script `run.ps1` at the root of the repository.
@@ -59,7 +59,7 @@ We have containerized the entire stack for environment-independent deployment:
 
 ---
 
-## 🧪 Running Automated Unit Tests
+## Running Automated Unit Tests
 
 We use `pytest` to run unit tests that check ratio formulas, solvency equations, and anti-hallucination validation rules:
 
@@ -75,7 +75,7 @@ We use `pytest` to run unit tests that check ratio formulas, solvency equations,
 
 ---
 
-## 📊 Telemetry and Experiment Tracking
+## Telemetry and Experiment Tracking
 
 FinSight AI logs every single analysis run (including uploaded file hashes, calculated ratios, solvency scoring zones, and generated PDF report artifacts) to local **MLflow**.
 

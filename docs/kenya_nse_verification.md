@@ -4,7 +4,7 @@ This document describes how to test **FinSight AI** using real financial stateme
 
 ---
 
-## 🇰🇪 Selected NSE Kenya Test Entities
+## Selected NSE Kenya Test Entities
 
 To verify the ingestion and solvency analysis engine, we recommend testing with public annual reports from the following listed entities:
 
@@ -19,7 +19,7 @@ To verify the ingestion and solvency analysis engine, we recommend testing with 
 
 ---
 
-## 📊 Comparison with World Bank & IFC African Benchmarks
+## Comparison with World Bank & IFC African Benchmarks
 
 When you upload an annual report of a Kenyan NSE company, the system compares its calculated ratios against pre-compiled sector averages. These averages are sourced from the **World Bank Enterprise Surveys (Sub-Saharan Africa)** and the **IFC SME Finance Gap Assessment**:
 
@@ -33,7 +33,7 @@ When you upload an annual report of a Kenyan NSE company, the system compares it
 
 ---
 
-## 📋 Step-by-Step Manual Verification Tutorial
+## Step-by-Step Manual Verification Tutorial
 
 1. **Download the PDF**: Go to the Investor Relations portal of [EABL](https://www.eabl.com/) or [Equity Group](https://equitygroupholdings.com/) and download their latest Annual Report PDF (e.g., FY 2024).
 2. **Open the Dashboard**: Start uvicorn and streamlit, and navigate to the Streamlit page (`http://localhost:8501`).

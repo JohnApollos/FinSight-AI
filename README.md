@@ -8,7 +8,7 @@ A critical challenge in emerging markets is that most financial analysis AI tool
 
 ---
 
-## 💼 Domain & Target Context Alignments
+## Domain & Target Context Alignments
 
 This project is built to demonstrate high-level engineering skills across several target industries:
 - **Nathan Digital (ERP & SaaS)**: Demonstrates document workflow automation, structured tabular extraction (from unstructured PDFs/DOCX/XLSX), and service-to-service API integrations.
@@ -18,7 +18,7 @@ This project is built to demonstrate high-level engineering skills across severa
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
 1. **Intelligent Ingestion Pipeline**: Ingests PDFs, DOCX, and XLSX sheets. Extracts financial metrics using a hybrid approach: **Google Gemini API** (via JSON Mode) when online, falling back to a **regex heuristics engine** when offline.
 2. **Double-Entry Validation**: Programmatically validates extracted figures against standard financial accounting constraints (e.g., $Assets = Liabilities + Equity$ and $Net\ Income = Revenue - Expenses$) to eliminate LLM hallucinations.
@@ -32,7 +32,7 @@ This project is built to demonstrate high-level engineering skills across severa
 
 ---
 
-## 📊 Key Findings from East African (NSE Kenya) Testing
+## Key Findings from East African (NSE Kenya) Testing
 
 We evaluated FinSight AI using public financial reports from Nairobi Securities Exchange (NSE) listed entities (including Stanbic Holdings Kenya, KCB Group, and East African Breweries). 
 
@@ -49,7 +49,7 @@ The evaluation revealed a critical counterintuitive finding:
 
 ---
 
-## 📐 System Architecture
+## System Architecture
 
 ```mermaid
 graph TD
@@ -88,7 +88,7 @@ graph TD
 
 ---
 
-## 📦 Data Sources Used
+## Data Sources Used
 
 - **SEC EDGAR 10-K Filings**: Crawled via the SEC Company Facts API. Fetches annual financial facts for 51 annual corporate records across commercial banking, personal finance, software, and insurance to seed the Isolation Forest baseline.
 - **NYU Damodaran Industry Benchmarks**: Key metrics (Net Margin, ROE, Debt/Equity, Current Ratio, Asset Turnover) for global finance, bank, software, retail, and transportation sectors.
@@ -97,7 +97,7 @@ graph TD
 
 ---
 
-## 🛠| Installation & Quickstart
+## Installation & Quickstart
 
 ### Option A: Local Run
 Ensure you have Python 3.10 - 3.13 installed.
@@ -134,7 +134,7 @@ docker-compose up --build
 
 ---
 
-## 🔒 Compliance & Guardrails
+## Compliance & Guardrails
 
 To operate in regulated environments like Stanbic Bank or development finance platforms, FinSight AI implements:
 1. **Explainable AI (XAI)**: No black-box anomaly flags; SHAP values isolate exactly which ratios caused outlier scores.
