@@ -43,7 +43,7 @@ FinSight AI is structured as a decoupled service pipeline, ensuring clean bounda
                 │
                 ▼ (Component 3)
    ┌──────────────────────────┐
-   │   LangChain Risk Agent   │ ──► Local ChromaDB Semantic Benchmark Query
+   │   LangChain Risk Agent   │ ──► Local ChromaDB Semantic Regulatory Context Query
    └──────────────────────────┘      fallback: Programmatic template compiler
                 │
                 ▼ (Component 4)
@@ -88,7 +88,7 @@ $$\text{Z''-Score} = 6.56(X_1) + 3.26(X_2) + 6.72(X_3) + 1.05(X_4)$$
 ## 🤖 Machine Learning Outlier Detection & SHAP Explainability
 
 ### Unsupervised Isolation Forest
-Rather than flagging credit risk purely on rigid, static ratio limits, FinSight AI trains a scikit-learn `IsolationForest` on a multi-dimensional reference baseline of **300+ clean public statements** representing "healthy" companies.
+Rather than flagging credit risk purely on rigid, static ratio limits, FinSight AI trains a scikit-learn `IsolationForest` on a multi-dimensional reference baseline of **51 annual corporate records** representing "healthy" companies (designed to scale).
 - **Dimensionality**: 10-dimensional feature space representing liquidity, margins, leverage, and efficiency ratios.
 - **Algorithm**: Recursively partitions data. Anomalous profiles require fewer splits to isolate, resulting in shorter path lengths and higher anomaly scores.
 - **Scoring**: Raw scores are normalized to a $0 - 100\%$ scale. Any profile scoring $> 50\%$ is flagged as a statistical outlier, signaling accounting irregularities, extreme leverage, or severe deficit configurations.
