@@ -23,6 +23,8 @@ backend/models/isolation_forest.pkl
 mlruns/
 backend/data/chroma/
 backend/data/shap_waterfall.png
+backend/data/ratio_comparison.png
+backend/data/history.json
 backend/data/temp/
 .pytest_cache/
 

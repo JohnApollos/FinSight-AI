@@ -6,6 +6,7 @@ import openpyxl
 from typing import Dict, Any, Optional, Tuple, List
 from langchain_google_genai import ChatGoogleGenerativeAI
 from pydantic import BaseModel, Field
+from backend.app.config import settings
 
 # Define schema for structured extraction
 class FinancialMetricsSchema(BaseModel):
@@ -223,7 +224,7 @@ def extract_financial_metrics(file_path: str, gemini_api_key: Optional[str] = No
         try:
             # Initialize Langchain ChatGoogleGenerativeAI
             llm = ChatGoogleGenerativeAI(
-                model="gemini-1.5-flash",
+                model=settings.GEMINI_MODEL,
                 google_api_key=gemini_api_key,
                 temperature=0.0
             )

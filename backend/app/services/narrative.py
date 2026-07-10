@@ -3,6 +3,7 @@ import json
 from typing import Dict, Any, Optional
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import PromptTemplate
+from backend.app.config import settings
 
 BENCHMARKS_PATH = "backend/data/benchmarks.json"
 CHROMA_PATH = "backend/data/chroma"
@@ -285,7 +286,7 @@ def generate_risk_narrative(
         print("Generating risk narrative using Google Gemini agent...")
         try:
             llm = ChatGoogleGenerativeAI(
-                model="gemini-1.5-flash",
+                model=settings.GEMINI_MODEL,
                 google_api_key=gemini_api_key,
                 temperature=0.3
             )
