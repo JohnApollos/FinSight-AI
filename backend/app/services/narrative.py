@@ -7,8 +7,82 @@ from langchain.prompts import PromptTemplate
 BENCHMARKS_PATH = "backend/data/benchmarks.json"
 CHROMA_PATH = "backend/data/chroma"
 
-# Seed benchmarks text description for ChromaDB
-def get_sector_profile_text(sector: str, data: Dict[str, Any]) -> str:
+# Textual regulatory and analytical context for ChromaDB seeding
+REGULATORY_DOCUMENTS = [
+    {
+        "id": "banking_basel_3",
+        "document": (
+            "Basel III Banking Regulation Framework:\n"
+            "- Banks are required to maintain a minimum Capital Adequacy Ratio (CAR) of 8.0% (10.5% including the capital conservation buffer).\n"
+            "- Under Central Bank of Kenya (CBK) guidelines, the minimum core capital to total risk-weighted assets is 10.5%, and total capital to risk-weighted assets is 14.5%.\n"
+            "- Non-performing loan (NPL) ratios above 5.0% represent critical asset quality deterioration and require provisioning adjustments.\n"
+            "- Liquidity Coverage Ratio (LCR) must exceed 100% to survive short-term liquidity shocks."
+        ),
+        "metadata": {"sector": "Banking", "topic": "Capital Adequacy & NPLs"}
+    },
+    {
+        "id": "insurance_solvency_2",
+        "document": (
+            "Solvency II Insurance Regulation Standards:\n"
+            "- Insurance companies must maintain a Solvency Capital Requirement (SCR) ratio of at least 100%.\n"
+            "- Premium receivables represent high credit risk if not collected within 90 days. Net premium margins must exceed 5.0% for sustainable underwriting.\n"
+            "- Debt-to-Equity ratios must remain conservative (typically <0.30) to protect policyholder reserves, as debt servicing cannot be funded from restricted policyholder assets."
+        ),
+        "metadata": {"sector": "Insurance", "topic": "SCR & Underwriting Reserves"}
+    },
+    {
+        "id": "fintech_emerging_markets",
+        "document": (
+            "Fintech & Mobile Lending Underwriting Guidelines:\n"
+            "- Microfinance and PAYG (pay-as-you-go) consumer finance entities operate with high leverage, but require a current ratio above 1.50 for basic liquidity.\n"
+            "- Non-performing loans (NPLs) for digital credit products must remain below a 5.0% threshold. Portfolios with NPLs exceeding 10.0% represent severe credit risk.\n"
+            "- Debt-to-equity ratios above 1.50 are common due to leverage funding, but interest coverage ratios (EBIT / Interest Expense) must exceed 2.0x to avoid insolvency."
+        ),
+        "metadata": {"sector": "Fintech", "topic": "Digital Credit & Cash Turnover"}
+    },
+    {
+        "id": "manufacturing_ifrs_standards",
+        "document": (
+            "IFRS/IAS Manufacturing Credit Risk Guidelines:\n"
+            "- Capital-heavy manufacturing firms require a current ratio above 1.50 for basic working capital health.\n"
+            "- Fixed asset turnover must be evaluated alongside asset impairment indicators (IAS 36). Low asset turnover (<0.80) signals underutilized capacity.\n"
+            "- Debt-to-equity ratios above 1.00 increase insolvency risks unless operating margins (EBIT / Revenue) exceed 10.0% to comfortably service long-term obligations."
+        ),
+        "metadata": {"sector": "Manufacturing", "topic": "Asset Impairment & Working Capital"}
+    },
+    {
+        "id": "development_finance_ngo",
+        "document": (
+            "NGO and Development Finance Institutions (DFIs) Underwriting Guidelines:\n"
+            "- Non-profit and developmental organizations prioritize liquidity over commercial profit margins.\n"
+            "- The primary credit focus is on grant-dependency and asset turnover (sustainable deployment of funds rather than ROE).\n"
+            "- Altman Z'' solvency scores below 1.20 indicate serious operational survival risks, but traditional leverage models are adjusted for grant receivables."
+        ),
+        "metadata": {"sector": "NGO / Development Finance", "topic": "Fund Utilization & Liquidity"}
+    },
+    {
+        "id": "agriculture_emerging_markets",
+        "document": (
+            "Agricultural Credit Risk & Underwriting Standards:\n"
+            "- Agribusiness credit is highly cyclical and vulnerable to weather and commodity price shocks.\n"
+            "- Current ratio must exceed 1.80 to provide a liquidity cushion during off-seasons. Inventory turnover is a critical operational health metric.\n"
+            "- Debt-to-equity ratios above 0.80 increase default risk. Underwriters require robust debt service coverage ratios (DSCR > 1.25x) and cash buffers."
+        ),
+        "metadata": {"sector": "Agriculture", "topic": "Agribusiness Cycles & Seasonality"}
+    },
+    {
+        "id": "software_saas_metrics",
+        "document": (
+            "SaaS and Software Credit Risk Standards:\n"
+            "- Asset-light SaaS companies have minimal physical collateral. Credit evaluations focus on recurring revenue streams and customer acquisition cost (CAC) efficiency.\n"
+            "- Current ratios must exceed 2.00 due to prepaid deferred revenue structures. Net margin should exceed 10.0% to support high research & development (R&D) reinvestment.\n"
+            "- Debt-to-equity should remain below 0.50, as leverage is typically replaced by equity financing (venture capital/growth equity) in early-to-mid stages."
+        ),
+        "metadata": {"sector": "Software", "topic": "Recurring Revenue & Leverage"}
+    }
+]
+
+def format_sector_profile(sector: str, data: Dict[str, Any]) -> str:
     """Formats sector benchmark data into a descriptive text profile."""
     return (
         f"Sector Profile: {sector}.\n"
@@ -29,10 +103,8 @@ def get_sector_profile_text(sector: str, data: Dict[str, Any]) -> str:
 
 def retrieve_sector_benchmark(sector: str) -> str:
     """
-    Attempts to retrieve the sector benchmark profile using local ChromaDB.
-    Falls back to direct JSON file parsing if ChromaDB is unavailable or error-prone.
+    Retrieves the structured sector benchmark numeric profile directly from benchmarks.json.
     """
-    # Check if benchmarks.json exists
     if not os.path.exists(BENCHMARKS_PATH):
         print(f"Warning: benchmarks.json not found at {BENCHMARKS_PATH}. Using Fintech defaults.")
         from damodaran_downloader import DEFAULT_BENCHMARKS
@@ -49,43 +121,50 @@ def retrieve_sector_benchmark(sector: str) -> str:
             break
             
     sector_info = benchmarks_data.get(matched_sector, benchmarks_data["Fintech"])
-    profile_text = get_sector_profile_text(matched_sector, sector_info)
-    
-    # Try using ChromaDB for semantic retrieval matching to demonstrate agentic architecture
+    return format_sector_profile(matched_sector, sector_info)
+
+def retrieve_regulatory_context(sector: str) -> str:
+    """
+    Retrieves relevant regulatory and underwriting guidelines from ChromaDB (Vector Store).
+    Falls back to matching offline text if ChromaDB is unavailable.
+    """
+    # Try using ChromaDB for semantic retrieval
     try:
         import chromadb
-        # Initalize persistent client
         client = chromadb.PersistentClient(path=CHROMA_PATH)
-        collection = client.get_or_create_collection("sector_benchmarks")
+        collection = client.get_or_create_collection("regulatory_context")
         
         # Populate if empty
         if collection.count() == 0:
-            print("Seeding local ChromaDB with sector benchmarks...")
+            print("Seeding local ChromaDB with regulatory and accounting frameworks...")
             documents = []
             ids = []
             metadatas = []
-            for s, data in benchmarks_data.items():
-                txt = get_sector_profile_text(s, data)
-                documents.append(txt)
-                ids.append(s)
-                metadatas.append({"sector": s})
+            for doc in REGULATORY_DOCUMENTS:
+                documents.append(doc["document"])
+                ids.append(doc["id"])
+                metadatas.append(doc["metadata"])
             collection.add(documents=documents, ids=ids, metadatas=metadatas)
             
-        # Query ChromaDB using the requested sector name
+        # Query ChromaDB semantically using the requested sector name
         results = collection.query(query_texts=[sector], n_results=1)
         if results and results["documents"] and results["documents"][0]:
-            print(f"Retrieved benchmark for '{sector}' from ChromaDB.")
+            print(f"Retrieved regulatory context for '{sector}' from ChromaDB.")
             return results["documents"][0][0]
             
     except Exception as e:
-        print(f"ChromaDB retrieval skipped ({e}). Falling back to JSON parser.")
+        print(f"ChromaDB regulatory context skipped ({e}). Using key-based fallback.")
         
-    print(f"Retrieved benchmark for '{matched_sector}' via JSON fallback.")
-    return profile_text
+    # Python-based fallback matching
+    for doc in REGULATORY_DOCUMENTS:
+        if doc["metadata"]["sector"].lower() in sector.lower() or sector.lower() in doc["metadata"]["sector"].lower():
+            return doc["document"]
+            
+    return REGULATORY_DOCUMENTS[2]["document"] # Return fintech as default
 
 def generate_offline_narrative(company_name: str, sector: str, ratios: Dict[str, float], solvency: Dict[str, Any], anomaly: Dict[str, Any]) -> str:
     """
-    Generates a high-fidelity plain-English narrative using programmatic templates (Offline Fallback).
+    Generates a financial risk narrative using programmatic templates (Offline Fallback).
     """
     z_score = solvency.get("score", 0.0)
     z_zone = solvency.get("zone", "Unknown")
@@ -107,7 +186,6 @@ def generate_offline_narrative(company_name: str, sector: str, ratios: Dict[str,
             break
     bench = benchmarks_data[matched_sector]
     
-    # Evaluate Strengths and Concerns
     strengths = []
     concerns = []
     
@@ -150,7 +228,6 @@ def generate_offline_narrative(company_name: str, sector: str, ratios: Dict[str,
     if is_anomaly:
         concerns.append(f"Statistical Anomaly Detected: The company's financial profile was flagged as an outlier (Score: {anomaly_score:.1f}%) compared to standard sector baselines.")
         
-    # Construct Narrative Sections
     exec_summary = (
         f"FinSight AI completed a comprehensive financial risk evaluation for {company_name} in the {sector} sector. "
         f"The company has an Altman Z-Score of {z_score:.2f} ({z_zone}) using the {solvency.get('model_used')}. "
@@ -198,12 +275,12 @@ def generate_risk_narrative(
     gemini_api_key: Optional[str] = None
 ) -> str:
     """
-    Generates a financial risk narrative by querying the benchmarks vector store
-    and reasoning using the Gemini LLM or the offline template fallback.
+    Generates a financial risk narrative using LangChain + Gemini, combining calculated ratios,
+    structured numeric benchmarks, and semantically retrieved regulatory context from ChromaDB.
     """
     benchmark_profile = retrieve_sector_benchmark(sector)
+    regulatory_context = retrieve_regulatory_context(sector)
     
-    # Check if Gemini key is present
     if gemini_api_key and gemini_api_key.strip():
         print("Generating risk narrative using Google Gemini agent...")
         try:
@@ -214,7 +291,7 @@ def generate_risk_narrative(
             )
             
             prompt_template = PromptTemplate(
-                input_variables=["company", "sector", "ratios", "solvency", "anomaly", "benchmark"],
+                input_variables=["company", "sector", "ratios", "solvency", "anomaly", "benchmark", "regulatory_context"],
                 template=(
                     "You are a Senior Credit Analyst and Risk Officer at a development finance institution.\n"
                     "Your job is to write a plain-English risk narrative for a financial statement review.\n\n"
@@ -224,20 +301,21 @@ def generate_risk_narrative(
                     "### Solvency Status (Altman Z-Score):\n{solvency}\n\n"
                     "### Anomaly Detection (Isolation Forest & SHAP):\n{anomaly}\n\n"
                     "### Sector Benchmark Profile:\n{benchmark}\n\n"
+                    "### Regulatory & Methodological Context (Retrieved from Vector Store):\n{regulatory_context}\n\n"
                     "Generate a structured credit risk report containing these EXACT sections:\n"
                     "### EXECUTIVE SUMMARY\n"
-                    "Provide a 2-paragraph overview of the company's financial status and overall credit risk rating.\n\n"
+                    "Provide a 2-paragraph overview of the company's financial status and overall credit risk rating. "
+                    "Make sure to reference the company's specific ratios and how they align with the retrieved regulatory guidelines (e.g., Basel III capital requirements or Solvency II benchmarks if applicable).\n\n"
                     "### KEY STRENGTHS\n"
                     "Identify 2-3 specific ratios where the company beats the sector benchmark. Explain why this is good.\n\n"
                     "### KEY CONCERNS\n"
-                    "Identify 2-3 specific ratios where the company underperforms the benchmark, or mention Altman Z-Score distress/anomaly flags. Explain the risks.\n\n"
+                    "Identify 2-3 specific ratios where the company underperforms the benchmark, or mention Altman Z-Score distress/anomaly flags. Explain the risks in terms of regulatory capital or debt service.\n\n"
                     "### RECOMMENDATION\n"
                     "Provide a specific advisory recommendation regarding loan approval, covenant constraints, or mitigation strategies.\n\n"
                     "Maintain a formal, analytical credit analyst tone. Do not mention API keys or model names."
                 )
             )
             
-            # Format inputs
             ratios_formatted = json.dumps(ratios, indent=2)
             solvency_formatted = f"Altman Z-Score: {solvency.get('score'):.2f} | Zone: {solvency.get('zone')} ({solvency.get('model_used')})"
             anomaly_formatted = f"Anomaly Score: {anomaly.get('score'):.1f}% | Outlier: {anomaly.get('is_anomaly')} | Top Drivers: {anomaly.get('drivers')}"
@@ -248,7 +326,8 @@ def generate_risk_narrative(
                 ratios=ratios_formatted,
                 solvency=solvency_formatted,
                 anomaly=anomaly_formatted,
-                benchmark=benchmark_profile
+                benchmark=benchmark_profile,
+                regulatory_context=regulatory_context
             )
             
             response = llm.invoke(prompt)
