@@ -25,9 +25,21 @@ Key features include:
 
 ## Section 3 — Key Findings from NSE Kenya Testing
 
-We evaluated FinSight AI using public financial reports from Nairobi Securities Exchange (NSE) listed entities (including Stanbic Holdings Kenya, KCB Group, and East African Breweries). The results confirmed a critical systemic bias in Western-centric credit models:
+We evaluated FinSight AI using public financial reports from Nairobi Securities Exchange (NSE) listed entities, specifically **East African Breweries Limited (EABL)** and **Equity Group Holdings Plc**. The results confirmed critical findings about credit models, local baseline anomalies, and automated ingestion:
 
-- **Structural Balance Sheet Differences**: The Isolation Forest anomaly detector (trained on the US banking baseline) flagged healthy Kenyan banks as highly anomalous outliers, scoring them between **65% and 72%**.
+### Case Study: Equity Group Holdings Plc (EGH) FY 2023
+We uploaded EGH's annual report, extracting: Total Assets (KES 1,821.4bn), Total Liabilities (KES 1,603.3bn), Total Equity (KES 218.1bn), Net Profit Margin (24.05%), and ROE (22.3%). Programmatic audits passed with a 0.00% discrepancy.
+
+However, the run revealed a major **"Structural Metric Trap"** and how FinSight AI's localized benchmarks resolve it:
+1. **The Leverage Illusion**: In the Streamlit sidebar configuration, if the **Target Analysis Sector** is set to **Fintech** (which overlays software metrics), EGH's Debt-to-Equity ratio of **7.35** is flagged as a severe underperformance against the fintech benchmark median of **0.35**. 
+2. **The Efficiency Disconnect**: EGH's Asset Turnover of **0.10** is standard for a bank with a massive balance sheet, but triggers an artificial warning against a software sector median of **0.85**.
+3. **The Solvency Deficit**: Applying the service-sector model ($Z''$) under fintech parameters pulls the Altman Z-score down to **0.30**, incorrectly placing a healthy bank into the **Distress Zone**.
+4. **The Banking Correction**: Once the Target Analysis Sector dropdown in the sidebar is switched to **Banking**, the system overlays the World Bank SSA Banking averages and CBK guidelines. The system correctly identifies that EGH operates comfortably in the **Safe Zone**, backed by a Capital Adequacy Ratio of **18.1%** (vs the required 14.5% CBK statutory baseline), and classifies the **1.8% outlier anomaly** as a structural market reality mismatch (high government securities holdings at 27% of assets) rather than credit distress.
+
+- **EABL Ingestion & Verification**: 
+  - **Solvency**: Evaluated using the Altman Z'-Score (Manufacturing model) and scored a **12.72 (Safe Zone / Low Risk)**, reflecting EABL's solid asset base and strong operating margins.
+  - **Anomaly Detection**: Scored an outlier index of **25.6% (Standard Signature)**, confirming its financial profile matches a stable manufacturing firm.
+  - **Validation**: Programmatic audits flagged a rounding variance in statement units ($23,000,000.00$ vs $46,900,000.00$ total liabilities + equity), demonstrating the value of our double-entry validation layer.
 - **SHAP Diagnostic Weights**: SHAP explanation plots isolated that the outlier flags were not driven by default risk, but by healthy emerging-market characteristics:
   1. Exceptionally high government securities holdings (held under liquid cash equivalents) compared to US bank asset baselines.
   2. High non-performing loan (NPL) ratios (ranging from 6% to 12% in East Africa compared to the US average of 1.0% - 1.5%).

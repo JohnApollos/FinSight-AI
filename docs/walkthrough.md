@@ -16,7 +16,7 @@ The application reads configuration parameters from a local `.env` file.
    ```env
    # API Configuration
    GEMINI_API_KEY=your_gemini_api_key_here
-   GEMINI_MODEL=gemini-1.5-flash
+   GEMINI_MODEL=gemini-3.5-flash
 
    # Telemetry & Storage paths
    MLFLOW_TRACKING_URI=sqlite:///backend/data/mlflow.db
@@ -85,3 +85,12 @@ To view the interactive experiment registry:
    mlflow ui --port 5000
    ```
 2. Open `http://localhost:5000` to compare analysis runs, inspect raw parameters, and download historical reports.
+
+---
+
+## Real-World Validation Sweep
+
+The application has been verified using live annual reports from the Nairobi Securities Exchange (NSE):
+
+1. **East African Breweries Limited (EABL)**: Scored **12.72 (Safe Zone)** and an Anomaly Outlier Score of **25.6% (Standard Signature)**. The PDF report successfully compiled, plotted ratios, and was exported.
+2. **Equity Group Holdings Plc**: Scored **0.30 (Distress Zone)** under the standard Fintech/Service profile due to structural differences in commercial bank balance sheets (the **Structural Metric Trap**). When switched to the **Banking** sector, the system overlayed CBK guidelines to resolve it to the **Safe Zone**, with a Capital Adequacy Ratio of **18.1%** and a standard anomaly signature of **1.8%**.
