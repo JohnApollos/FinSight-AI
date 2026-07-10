@@ -1,0 +1,31 @@
+# Environment and configurations
+.env
+.venv/
+venv/
+ENV/
+.env.local
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Project generated data and models
+backend/data/benchmarks.json
+backend/data/sec_reference_data.csv
+backend/data/mlflow.db
+backend/models/isolation_forest.pkl
+mlruns/
+backend/data/chroma/
+.pytest_cache/
+
+# User document folders (exclude files, keep folders)
+backend/data/raw/*
+!backend/data/raw/.gitkeep
+backend/data/test_documents/*
+!backend/data/test_documents/.gitkeep

@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persistent storage for logs, models, and MLflow databases
+      - ./backend/data:/app/backend/data
+      - ./backend/models:/app/backend/models
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=gemini-1.5-flash
+      - MLFLOW_TRACKING_URI=sqlite:///backend/data/mlflow.db
+      - CHROMA_DB_PATH=backend/data/chroma
+      - HOST=0.0.0.0
+      - PORT=8000
+    restart: always
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "8501:8501"
+    environment:
+      # Network DNS routing inside Docker network
+      - BACKEND_API_URL=http://backend:8000
+    depends_on:
+      - backend
+    restart: always
