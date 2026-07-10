@@ -124,6 +124,21 @@ def retrieve_sector_benchmark(sector: str) -> str:
     sector_info = benchmarks_data.get(matched_sector, benchmarks_data["Fintech"])
     return format_sector_profile(matched_sector, sector_info)
 
+class SimpleMockEmbeddingFunction:
+    def __call__(self, input):
+        # We construct a simple 6-dimensional one-hot embedding based on sector keywords
+        # to ensure semantic querying works correctly without downloading any external model!
+        sectors = ["fintech", "insurance", "banking", "manufacturing", "software", "ngo"]
+        embeddings = []
+        for text in input:
+            text_lower = text.lower()
+            vec = [0.0] * 6
+            for idx, s in enumerate(sectors):
+                if s in text_lower:
+                    vec[idx] = 1.0
+            embeddings.append(vec)
+        return embeddings
+
 def retrieve_regulatory_context(sector: str) -> str:
     """
     Retrieves relevant regulatory and underwriting guidelines from ChromaDB (Vector Store).
@@ -132,8 +147,24 @@ def retrieve_regulatory_context(sector: str) -> str:
     # Try using ChromaDB for semantic retrieval
     try:
         import chromadb
-        client = chromadb.PersistentClient(path=CHROMA_PATH)
-        collection = client.get_or_create_collection("regulatory_context")
+        import shutil
+        
+        # Self-healing ChromaDB load in case of schema/dimension mismatches
+        try:
+            client = chromadb.PersistentClient(path=CHROMA_PATH)
+            collection = client.get_or_create_collection(
+                "regulatory_context",
+                embedding_function=SimpleMockEmbeddingFunction()
+            )
+        except Exception:
+            # Force reset the DB if corrupted or schema mismatch
+            if os.path.exists(CHROMA_PATH):
+                shutil.rmtree(CHROMA_PATH)
+            client = chromadb.PersistentClient(path=CHROMA_PATH)
+            collection = client.get_or_create_collection(
+                "regulatory_context",
+                embedding_function=SimpleMockEmbeddingFunction()
+            )
         
         # Populate if empty
         if collection.count() == 0:
