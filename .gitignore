@@ -22,6 +22,8 @@ mlflow.db
 backend/models/isolation_forest.pkl
 mlruns/
 backend/data/chroma/
+backend/data/shap_waterfall.png
+backend/data/temp/
 .pytest_cache/
 
 # User document folders (exclude files, keep folders)

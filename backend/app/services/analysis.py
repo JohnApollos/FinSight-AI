@@ -145,7 +145,7 @@ def analyze_anomaly(ratios: Dict[str, float]) -> Tuple[float, bool, List[Dict[st
             
         # Predict: 1 = normal, -1 = anomaly
         pred = model.predict(X)[0]
-        is_anomaly = (pred == -1)
+        is_anomaly = bool(pred == -1)
         
         # Raw score: lower means more anomalous (in scikit-learn, decision_function returns signed scores)
         raw_score = model.decision_function(X)[0]
