@@ -1,12 +1,12 @@
-# FinSight AI — Architecture & System Design Specification
+# FinLens AI — Architecture & System Design Specification
 
-This document details the engineering architecture, mathematical formulas, and machine learning pipeline behind **FinSight AI — Intelligent Financial Document Analysis and Risk Intelligence Engine**.
+This document details the engineering architecture, mathematical formulas, and machine learning pipeline behind **FinLens AI — Intelligent Financial Document Analysis and Risk Intelligence Engine**.
 
 ---
 
 ## System Pipeline Architecture
 
-FinSight AI is structured as a decoupled service pipeline, ensuring clean boundaries between ingestion, ratio calculation, anomaly detection, semantic context retrieval, and report compilation.
+FinLens AI is structured as a decoupled service pipeline, ensuring clean boundaries between ingestion, ratio calculation, anomaly detection, semantic context retrieval, and report compilation.
 
 ```
        [Financial Document] (PDF / Word / Excel)
@@ -88,7 +88,7 @@ Every uploaded document is scanned and hashed via MD5. The unique hash is concat
 * **Caching Performance**: Bypasses slow PDF text scanning, LLM schema parsing, and database queries. Reduces subsequent request latencies from **30+ seconds** to **under 0.01 seconds** using **0 Gemini tokens**.
 
 ### 2. Decoupled Image Serving (`/charts/shap/{file_id}`)
-* **Decoupled Image Network Boundary**: Traditional file-sharing designs write static Matplotlib charts to disk and have the frontend read them from the local folder. This is a severe containerization anti-pattern. FinSight AI hosts a dedicated GET endpoint `/charts/shap/{file_id}` to serve images over the network.
+* **Decoupled Image Network Boundary**: Traditional file-sharing designs write static Matplotlib charts to disk and have the frontend read them from the local folder. This is a severe containerization anti-pattern. FinLens AI hosts a dedicated GET endpoint `/charts/shap/{file_id}` to serve images over the network.
 * **Collision Guard**: Temporary image paths are saved with unique IDs (`shap_waterfall_{file_id}.png`). This ensures concurrent user requests do not overwrite one another's visual diagnostics.
 * **Immediate Cleanup**: PDF compilation comparison charts are deleted immediately after document compilation completes, conserving disk memory.
 
@@ -96,7 +96,7 @@ Every uploaded document is scanned and hashed via MD5. The unique hash is concat
 
 ## Solvency & Credit Risk Formulations
 
-Traditional credit scoring models rely on linear weighting. FinSight AI implements two distinct academic solvency models to accommodate different corporate structures:
+Traditional credit scoring models rely on linear weighting. FinLens AI implements two distinct academic solvency models to accommodate different corporate structures:
 
 ### 1. Classic Altman Z'-Score (Private Manufacturing Model)
 Applied when the target entity is classified as an industrial or manufacturing firm:
@@ -128,7 +128,7 @@ $$\text{Z''-Score} = 6.56(X_1) + 3.26(X_2) + 6.72(X_3) + 1.05(X_4)$$
 ## Machine Learning Outlier Detection & SHAP Explainability
 
 ### Unsupervised Isolation Forest
-Rather than flagging credit risk purely on rigid, static ratio limits, FinSight AI trains a scikit-learn `IsolationForest` on a multi-dimensional reference baseline of **51 annual corporate records** representing "healthy" companies (designed to scale).
+Rather than flagging credit risk purely on rigid, static ratio limits, FinLens AI trains a scikit-learn `IsolationForest` on a multi-dimensional reference baseline of **51 annual corporate records** representing "healthy" companies (designed to scale).
 - **Dimensionality**: 10-dimensional feature space representing liquidity, margins, leverage, and efficiency ratios.
 - **Algorithm**: Recursively partitions data. Anomalous profiles require fewer splits to isolate, resulting in shorter path lengths and higher anomaly scores.
 - **Scoring**: Raw scores are normalized to a $0 - 100\%$ scale. Any profile scoring $> 50\%$ is flagged as a statistical outlier, signaling accounting irregularities, extreme leverage, or severe deficit configurations.

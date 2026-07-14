@@ -9,7 +9,7 @@ $VENV_STREAMLIT = ".\.venv\Scripts\streamlit.exe"
 # If bootstrap flag is supplied, run the data pipelines and train model
 if ($Bootstrap) {
     Write-Host "==================================================" -ForegroundColor Cyan
-    Write-Host "Running FinSight AI data pipeline & model bootstrap..." -ForegroundColor Cyan
+    Write-Host "Running FinLens AI data pipeline & model bootstrap..." -ForegroundColor Cyan
     Write-Host "==================================================" -ForegroundColor Cyan
     & $VENV_PYTHON backend/app/utils/bootstrap.py
     Exit

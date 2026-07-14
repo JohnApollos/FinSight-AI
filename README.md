@@ -1,4 +1,4 @@
-# FinSight AI — Intelligent Financial Document Analysis and Risk Intelligence Engine
+# FinLens AI — Intelligent Financial Document Analysis and Risk Intelligence Engine
 
 ---
 
@@ -10,9 +10,9 @@ A critical challenge in emerging markets is that most financial analysis AI tool
 
 ---
 
-## Section 2 — What FinSight AI Does
+## Section 2 — What FinLens AI Does
 
-FinSight AI automates the entire risk review process: upload a financial document, receive a structured risk assessment with anomaly flags, industry benchmark comparisons, and a plain-English risk narrative in under 60 seconds.
+FinLens AI automates the entire risk review process: upload a financial document, receive a structured risk assessment with anomaly flags, industry benchmark comparisons, and a plain-English risk narrative in under 60 seconds.
 
 Key features include:
 - **Intelligent Ingestion**: Hybrid text extractor using Google Gemini 1.5 Flash (JSON Mode) with deterministic double-entry validation equations ($Assets = Liabilities + Equity$) and local regex-based heuristics fallbacks.
@@ -27,12 +27,12 @@ Key features include:
 
 ## Section 3 — Key Findings from NSE Kenya Testing
 
-We evaluated FinSight AI using public financial reports from Nairobi Securities Exchange (NSE) listed entities, specifically **East African Breweries Limited (EABL)** and **Equity Group Holdings Plc**. The results confirmed critical findings about credit models, local baseline anomalies, and automated ingestion:
+We evaluated FinLens AI using public financial reports from Nairobi Securities Exchange (NSE) listed entities, specifically **East African Breweries Limited (EABL)** and **Equity Group Holdings Plc**. The results confirmed critical findings about credit models, local baseline anomalies, and automated ingestion:
 
 ### Case Study: Equity Group Holdings Plc (EGH) FY 2023
 We uploaded EGH's annual report, extracting: Total Assets (KES 1,821.4bn), Total Liabilities (KES 1,603.3bn), Total Equity (KES 218.1bn), Net Profit Margin (24.05%), and ROE (22.3%). Programmatic audits passed with a 0.00% discrepancy.
 
-However, the run revealed a major **"Structural Metric Trap"** and how FinSight AI's localized benchmarks resolve it:
+However, the run revealed a major **"Structural Metric Trap"** and how FinLens AI's localized benchmarks resolve it:
 1. **The Leverage Illusion**: In the Streamlit sidebar configuration, if the **Target Analysis Sector** is set to **Fintech** (which overlays software metrics), EGH's Debt-to-Equity ratio of **7.35** is flagged as a severe underperformance against the fintech benchmark median of **0.35**. 
 2. **The Efficiency Disconnect**: EGH's Asset Turnover of **0.10** is standard for a bank with a massive balance sheet, but triggers an artificial warning against a software sector median of **0.85**.
 3. **The Solvency Deficit**: Applying the service-sector model ($Z''$) under fintech parameters pulls the Altman Z-score down to **0.30**, incorrectly placing a healthy bank into the **Distress Zone**.
@@ -46,7 +46,7 @@ However, the run revealed a major **"Structural Metric Trap"** and how FinSight 
   1. Exceptionally high government securities holdings (held under liquid cash equivalents) compared to US bank asset baselines.
   2. High non-performing loan (NPL) ratios (ranging from 6% to 12% in East Africa compared to the US average of 1.0% - 1.5%).
   3. Elevated Net Interest Margins (NIM) of 6% - 8% (typical for African commercial banks but outlier-level compared to US commercial banks).
-- **Localized Value**: By using RAG to query and overlay World Bank Sub-Saharan Africa benchmarks and CBK guidelines, FinSight AI successfully contextualized the risk narrative, turning false-positive anomaly warnings into actionable risk insights.
+- **Localized Value**: By using RAG to query and overlay World Bank Sub-Saharan Africa benchmarks and CBK guidelines, FinLens AI successfully contextualized the risk narrative, turning false-positive anomaly warnings into actionable risk insights.
 
 ---
 

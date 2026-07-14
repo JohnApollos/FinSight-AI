@@ -1,6 +1,6 @@
-# FinSight AI — Kenyan NSE Verification & Benchmark Guide
+# FinLens AI — Kenyan NSE Verification & Benchmark Guide
 
-This document describes how to test **FinSight AI** using real financial statements from companies listed on the **Nairobi Securities Exchange (NSE)** in Kenya, and compares their metrics against our integrated **World Bank Sub-Saharan Africa** benchmarks.
+This document describes how to test **FinLens AI** using real financial statements from companies listed on the **Nairobi Securities Exchange (NSE)** in Kenya, and compares their metrics against our integrated **World Bank Sub-Saharan Africa** benchmarks.
 
 ---
 
@@ -28,7 +28,7 @@ When you upload an annual report of a Kenyan NSE company, the system compares it
 - **World Bank Credit Constraint**: **38.4%** of manufacturing firms in Sub-Saharan Africa report severe access to finance constraints. Comparing Bamburi's Debt-to-Equity ratio helps classify if the company is overleveraged or has healthy access to credit.
 
 ### 2. Banking & Fintech (e.g. Equity, KCB, Stanbic)
-- **IFC African Fintech NPL (Non-Performing Loan) Benchmark**: The regional average NPL for mobile/fintech lenders is **3.2%**, and traditional banking averages **4.5%**. FinSight AI compares the target bank's NPL ratio to these regional benchmarks.
+- **IFC African Fintech NPL (Non-Performing Loan) Benchmark**: The regional average NPL for mobile/fintech lenders is **3.2%**, and traditional banking averages **4.5%**. FinLens AI compares the target bank's NPL ratio to these regional benchmarks.
 - **ROE Benchmarks**: Regional average ROE for healthy banking institutions is **11.5%**.
 
 ---

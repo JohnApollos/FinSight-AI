@@ -6,7 +6,7 @@ import requests
 from typing import Dict, List, Optional, Set, Tuple
 
 # Configuration
-USER_AGENT = "FinSightAI-DevUser student_dev@finsightai.local"
+USER_AGENT = "FinLensAI-DevUser student_dev@finlensai.local"
 HEADERS = {"User-Agent": USER_AGENT}
 TARGET_SICS = {"6022", "6141", "6159", "6311", "6321", "6411", "7372"}
 OUTPUT_PATH = "backend/data/sec_reference_data.csv"

@@ -1,6 +1,6 @@
-# FinSight AI — Setup, Verification & Quickstart Guide
+# FinLens AI — Setup, Verification & Quickstart Guide
 
-This document describes how to configure, bootstrap, test, and run **FinSight AI** locally or using Docker.
+This document describes how to configure, bootstrap, test, and run **FinLens AI** locally or using Docker.
 
 ---
 
@@ -77,7 +77,7 @@ We use `pytest` to run unit tests that check ratio formulas, solvency equations,
 
 ## Telemetry and Experiment Tracking
 
-FinSight AI logs every single analysis run (including uploaded file hashes, calculated ratios, solvency scoring zones, and generated PDF report artifacts) to local **MLflow**.
+FinLens AI logs every single analysis run (including uploaded file hashes, calculated ratios, solvency scoring zones, and generated PDF report artifacts) to local **MLflow**.
 
 To view the interactive experiment registry:
 1. Start the MLflow UI:

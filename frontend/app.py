@@ -6,7 +6,7 @@ from PIL import Image
 
 # Config Page Layout
 st.set_page_config(
-    page_title="FinSight AI — Risk Intelligence Dashboard",
+    page_title="FinLens AI — Risk Intelligence Dashboard",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -57,7 +57,7 @@ st.markdown("""
 st.sidebar.image("https://img.icons8.com/color/96/combo-chart--v1.png", width=60)
 st.sidebar.markdown("""
 <h2 style="font-family: 'Inter', sans-serif; font-weight: 700; font-size: 22px; margin-top: 10px; margin-bottom: 2px;">
-    FinSight AI
+    FinLens AI
 </h2>
 <p style="color: #64748b; font-family: 'Inter', sans-serif; font-size: 12px; margin-bottom: 20px;">
     Intelligent Financial Risk & Solvency Engine
@@ -105,14 +105,14 @@ except Exception:
 
 st.sidebar.divider()
 st.sidebar.info(
-    "Compliance: FinSight AI metrics are advisory. Decisions require human credit underwriting controls."
+    "Compliance: FinLens AI metrics are advisory. Decisions require human credit underwriting controls."
 )
 
 # Main Page Header (Premium Gradient Banner)
 st.markdown("""
 <div style="background: linear-gradient(135deg, #1e293b, #0f172a); padding: 30px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
     <h1 style="color: #ffffff; margin: 0; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 28px; letter-spacing: -0.5px;">
-        FinSight AI &mdash; Risk Intelligence Dashboard
+        FinLens AI &mdash; Risk Intelligence Dashboard
     </h1>
     <p style="color: #94a3b8; margin: 6px 0 0 0; font-family: 'Inter', sans-serif; font-size: 14px;">
         Ingest financial statements, compute solvency metrics, score anomalies, and synthesize credit narratives instantly.
@@ -171,7 +171,7 @@ if uploaded_file is not None:
                             st.download_button(
                                 label="Download Audit-Ready PDF Report",
                                 data=pdf_resp.content,
-                                file_name=f"FinSight_Audit_Report_{result['company_name'].replace(' ', '_')}.pdf",
+                                file_name=f"FinLens_Audit_Report_{result['company_name'].replace(' ', '_')}.pdf",
                                 mime="application/pdf",
                                 use_container_width=True
                             )

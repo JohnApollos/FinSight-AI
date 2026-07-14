@@ -9,7 +9,7 @@ RAW_DIR = "backend/data/raw"
 XLS_PATH = os.path.join(RAW_DIR, "ratios.xls")
 OUTPUT_PATH = "backend/data/benchmarks.json"
 
-# Industry mappings: FinSight Industry Name -> List of matching names in Damodaran sheet
+# Industry mappings: FinLens Industry Name -> List of matching names in Damodaran sheet
 SECTOR_MAPPING = {
     "Fintech": [
         "Financial Services (Non-bank)",

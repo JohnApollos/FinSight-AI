@@ -261,7 +261,7 @@ def generate_offline_narrative(company_name: str, sector: str, ratios: Dict[str,
         concerns.append(f"Statistical Anomaly Detected: The company's financial profile was flagged as an outlier (Score: {anomaly_score:.1f}%) compared to standard sector baselines.")
         
     exec_summary = (
-        f"FinSight AI completed a comprehensive financial risk evaluation for {company_name} in the {sector} sector. "
+        f"FinLens AI completed a comprehensive financial risk evaluation for {company_name} in the {sector} sector. "
         f"The company has an Altman Z-Score of {z_score:.2f} ({z_zone}) using the {solvency.get('model_used')}. "
         f"Statistical anomaly analysis scored the company at {anomaly_score:.1f}%, indicating a "
         f"{'highly anomalous' if is_anomaly else 'standard'} operational signature."

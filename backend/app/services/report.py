@@ -168,7 +168,7 @@ def compile_pdf_report(
     
     # ================= PAGE 1: COVER PAGE =================
     story.append(Spacer(1, 1 * inch))
-    story.append(Paragraph("FINSIGHT AI", ParagraphStyle("Brand", fontName="Helvetica-Bold", fontSize=12, textColor=colors.HexColor("#3498db"), spaceAfter=10)))
+    story.append(Paragraph("FINLENS AI", ParagraphStyle("Brand", fontName="Helvetica-Bold", fontSize=12, textColor=colors.HexColor("#3498db"), spaceAfter=10)))
     story.append(Paragraph("Intelligent Financial Risk & Solvency Analysis", title_style))
     story.append(Paragraph(f"Commercial credit review and anomaly detection engine.", subtitle_style))
     
@@ -367,7 +367,7 @@ def compile_pdf_report(
     story.append(Paragraph("Methodology & Compliance Disclosure", h1_style))
     story.append(Paragraph("<b>Analysis Methodology:</b>", ParagraphStyle("SubH", fontName="Helvetica-Bold", fontSize=10, textColor=colors.HexColor("#2c3e50"), spaceBefore=6)))
     story.append(Paragraph(
-        "FinSight AI processes absolute financial figures via a multi-layered classification pipeline. "
+        "FinLens AI processes absolute financial figures via a multi-layered classification pipeline. "
         "Liquidity, leverage, profitability, and operational efficiency ratios are calculated locally. "
         "Solvency zones are classified using Altman's double-prime model (Z''-Score) for service, software, bank, and insurance institutions, "
         "and Altman's modified private manufacturing model (Z'-Score) for industrial entities. "
@@ -382,7 +382,7 @@ def compile_pdf_report(
     story.append(Paragraph(
         "This analysis is advisory and generated automatically using a combination of machine learning models and LLM reasoning. "
         "Model outputs are not a substitute for human professional judgment, audits, or detailed credit underwriting. "
-        "FinSight AI does not guarantee the absolute accuracy of parsed figures and does not assume liability for credit decisions, "
+        "FinLens AI does not guarantee the absolute accuracy of parsed figures and does not assume liability for credit decisions, "
         "portfolio losses, or compliance infractions resulting from the use of this report.",
         body_style
     ))

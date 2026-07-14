@@ -25,7 +25,7 @@ from backend.app.services.report import compile_pdf_report
 
 # Initialize FastAPI
 app = FastAPI(
-    title="FinSight AI API",
+    title="FinLens AI API",
     description="Intelligent financial document ingestion and risk analytics engine.",
     version="1.0.0"
 )
@@ -49,7 +49,7 @@ os.makedirs(TEMP_DIR, exist_ok=True)
 # Initialize MLflow tracking
 try:
     mlflow.set_tracking_uri(settings.MLFLOW_TRACKING_URI)
-    mlflow.set_experiment("FinSight_AI_Document_Analysis")
+    mlflow.set_experiment("FinLens_AI_Document_Analysis")
     print(f"MLflow initialized with tracking URI: {settings.MLFLOW_TRACKING_URI}")
 except Exception as ml_err:
     print(f"Warning: Failed to initialize MLflow: {ml_err}")
@@ -325,7 +325,7 @@ async def generate_report(
             return FileResponse(
                 pdf_output_path, 
                 media_type="application/pdf", 
-                filename=f"FinSight_Audit_Report_{result['company_name'].replace(' ', '_')}.pdf"
+                filename=f"FinLens_Audit_Report_{result['company_name'].replace(' ', '_')}.pdf"
             )
             
         # Fallback (Cache miss)
@@ -363,7 +363,7 @@ async def generate_report(
         return FileResponse(
             pdf_output_path, 
             media_type="application/pdf", 
-            filename=f"FinSight_Audit_Report_{extracted['company_name'].replace(' ', '_')}.pdf"
+            filename=f"FinLens_Audit_Report_{extracted['company_name'].replace(' ', '_')}.pdf"
         )
         
     except Exception as e:

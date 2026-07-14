@@ -1,7 +1,7 @@
 import requests
 
 headers = {
-    "User-Agent": "FinSightAI-DevUser student_dev@finsightai.local"
+    "User-Agent": "FinLensAI-DevUser student_dev@finlensai.local"
 }
 
 url = "https://efts.sec.gov/LATEST/search-index"
