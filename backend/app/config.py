@@ -1,19 +1,18 @@
-import os
-from pydantic_settings import BaseSettings
-from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
-    GEMINI_API_KEY: str = Field(default="", env="GEMINI_API_KEY")
-    GEMINI_MODEL: str = Field(default="gemini-3.5-flash", env="GEMINI_MODEL")
-    MLFLOW_TRACKING_URI: str = Field(default="sqlite:///backend/data/mlflow.db", env="MLFLOW_TRACKING_URI")
-    CHROMA_DB_PATH: str = Field(default="backend/data/chroma", env="CHROMA_DB_PATH")
-    SEC_USER_AGENT: str = Field(default="FinSightAI-DevUser student_dev@finsightai.local", env="SEC_USER_AGENT")
-    HOST: str = Field(default="127.0.0.1", env="HOST")
-    PORT: int = Field(default=8000, env="PORT")
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore"
+    )
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        extra = "ignore"
+    GEMINI_API_KEY: str = ""
+    GEMINI_MODEL: str = "gemini-3.5-flash"
+    MLFLOW_TRACKING_URI: str = "sqlite:///backend/data/mlflow.db"
+    CHROMA_DB_PATH: str = "backend/data/chroma"
+    SEC_USER_AGENT: str = "FinSightAI-DevUser student_dev@finsightai.local"
+    HOST: str = "127.0.0.1"
+    PORT: int = 8000
 
 settings = Settings()

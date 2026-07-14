@@ -24,30 +24,59 @@ FEATURES = [
 ]
 
 def calculate_ratios(df: pd.DataFrame) -> pd.DataFrame:
-    """Computes the 10 core financial ratios from absolute statements."""
+    """Computes the 10 core financial ratios from absolute statements using identical math to analysis.py."""
     df_ratios = pd.DataFrame(index=df.index)
     
-    # Pre-empt division by zero
     assets = df["assets"].clip(lower=1.0)
+    liabilities = df["liabilities"].clip(lower=0.0)
     equity = df["equity"].clip(lower=1.0)
     revenue = df["revenue"].clip(lower=1.0)
-    liabilities = df["liabilities"].clip(lower=0.0)
+    net_income = df["net_income"]
+    working_capital = df.get("working_capital", pd.Series(0.0, index=df.index))
+    cash = df.get("cash", pd.Series(0.0, index=df.index))
+    receivables = df.get("accounts_receivable", pd.Series(0.0, index=df.index))
+    inventory = df.get("inventory", pd.Series(0.0, index=df.index))
+    interest_expense = df.get("interest_expense", pd.Series(0.0, index=df.index))
     
-    df_ratios["current_ratio"] = df["working_capital"] / liabilities.clip(lower=1.0) + 1.0 # Proxy for current ratio if working capital is present
-    # Standardize current ratio limits
-    df_ratios["current_ratio"] = df_ratios["current_ratio"].clip(lower=0.1, upper=10.0)
+    # Calculate proxy current assets
+    current_assets = cash + receivables + inventory
+    # For rows where current_assets is 0.0, default proxy current assets to 30% of total assets
+    is_zero_ca = current_assets == 0.0
+    current_assets = current_assets.mask(is_zero_ca, assets * 0.30)
     
-    # Quick/Cash ratios (approximate based on standard asset distributions if detailed items are missing)
-    df_ratios["quick_ratio"] = (df_ratios["current_ratio"] * 0.7).clip(lower=0.1, upper=8.0)
-    df_ratios["cash_ratio"] = (df_ratios["current_ratio"] * 0.35).clip(lower=0.05, upper=5.0)
+    # Calculate current liabilities
+    current_liabilities = current_assets - working_capital
+    # For rows where current_liabilities <= 0, proxy them as 40% of total liabilities
+    is_le_zero_cl = current_liabilities <= 0.0
+    cl_proxy = liabilities * 0.40
+    cl_proxy = cl_proxy.clip(lower=1.0)
+    current_liabilities = current_liabilities.mask(is_le_zero_cl, cl_proxy)
     
-    df_ratios["roa"] = df["net_income"] / assets
-    df_ratios["roe"] = df["net_income"] / equity
-    df_ratios["net_margin"] = df["net_income"] / revenue
-    df_ratios["operating_margin"] = (df["net_income"] * 1.3) / revenue # EBIT proxy
+    # Recalculate current assets for the proxy rows
+    ca_proxy = working_capital + current_liabilities
+    current_assets = current_assets.mask(is_le_zero_cl, ca_proxy)
+    
+    # Liquidity Ratios
+    df_ratios["current_ratio"] = (current_assets / current_liabilities).clip(lower=0.1, upper=10.0)
+    df_ratios["quick_ratio"] = ((current_assets - inventory) / current_liabilities).clip(lower=0.1, upper=10.0)
+    df_ratios["cash_ratio"] = (cash / current_liabilities).clip(lower=0.05, upper=10.0)
+    
+    # Profitability Ratios
+    df_ratios["roa"] = net_income / assets
+    df_ratios["roe"] = net_income / equity
+    df_ratios["net_margin"] = net_income / revenue
+    
+    # EBIT proxy
+    ebit = net_income + interest_expense
+    ebit = ebit.mask(ebit == 0.0, net_income * 1.30)
+    df_ratios["operating_margin"] = ebit / revenue
+    
+    # Leverage Ratios
     df_ratios["debt_to_equity"] = liabilities / equity
     df_ratios["debt_to_assets"] = liabilities / assets
-    df_ratios["asset_turnover"] = df["revenue"] / assets
+    
+    # Efficiency Ratio
+    df_ratios["asset_turnover"] = revenue / assets
     
     # Clean inf/nan values
     df_ratios = df_ratios.replace([np.inf, -np.inf], np.nan)
@@ -95,11 +124,17 @@ def generate_synthetic_data(num_samples: int = 500) -> pd.DataFrame:
         net_income = revenue * margin
         retained_earnings = equity * np.random.uniform(0.1, 0.5)
         
-        # Working capital
+        # Working capital & asset mix variables
         if sic in {"6022", "6159", "6311", "6321"}:
             working_capital = 0.0 # Financial institutions do not report current items
+            cash = assets * np.random.uniform(0.05, 0.20)
+            inventory = 0.0
+            accounts_receivable = assets * np.random.uniform(0.10, 0.40)
         else:
             working_capital = assets * np.random.normal(0.25, 0.08)
+            cash = assets * np.random.uniform(0.05, 0.15)
+            inventory = assets * np.random.uniform(0.10, 0.25) if sic != "7372" else 0.0
+            accounts_receivable = assets * np.random.uniform(0.10, 0.25)
             
         data.append({
             "cik": f"{i:010d}",
@@ -112,7 +147,10 @@ def generate_synthetic_data(num_samples: int = 500) -> pd.DataFrame:
             "liabilities": liabilities,
             "equity": equity,
             "retained_earnings": retained_earnings,
-            "working_capital": working_capital
+            "working_capital": working_capital,
+            "cash": cash,
+            "inventory": inventory,
+            "accounts_receivable": accounts_receivable
         })
         
     df = pd.DataFrame(data)

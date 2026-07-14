@@ -346,9 +346,18 @@ if uploaded_file is not None:
                     )
                     
                     # Embed Matplotlib SHAP chart
-                    if os.path.exists(anomaly["chart_path"]):
-                        img = Image.open(anomaly["chart_path"])
-                        st.image(img, use_column_width=False, width=650)
+                    chart_path = anomaly.get("chart_path", "")
+                    if chart_path:
+                        if chart_path.startswith("http") or chart_path.startswith("/"):
+                            url = chart_path
+                            if url.startswith("/"):
+                                url = f"{API_URL}{url}"
+                            st.image(url, use_column_width=False, width=650)
+                        elif os.path.exists(chart_path):
+                            img = Image.open(chart_path)
+                            st.image(img, use_column_width=False, width=650)
+                        else:
+                            st.write("No SHAP waterfall chart generated. Confirm that the Isolation Forest model has been trained.")
                     else:
                         st.write("No SHAP waterfall chart generated. Confirm that the Isolation Forest model has been trained.")
                         

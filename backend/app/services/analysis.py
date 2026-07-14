@@ -120,7 +120,7 @@ def compute_ratios_from_statement(stmt: Dict[str, Any]) -> Dict[str, float]:
         "altman_z_service": float(z_service)
     }
 
-def analyze_anomaly(ratios: Dict[str, float]) -> Tuple[float, bool, List[Dict[str, Any]], str]:
+def analyze_anomaly(ratios: Dict[str, float], identifier: str = "") -> Tuple[float, bool, List[Dict[str, Any]], str]:
     """
     Evaluates computed ratios against the trained Isolation Forest.
     Uses SHAP to explain the anomaly score.
@@ -179,7 +179,10 @@ def analyze_anomaly(ratios: Dict[str, float]) -> Tuple[float, bool, List[Dict[st
         drivers.sort(key=lambda x: x["shap_value"])
         
         # Generate SHAP Matplotlib chart
-        chart_path = "backend/data/shap_waterfall.png"
+        if identifier:
+            chart_path = f"backend/data/temp/shap_waterfall_{identifier}.png"
+        else:
+            chart_path = "backend/data/shap_waterfall.png"
         os.makedirs(os.path.dirname(chart_path), exist_ok=True)
         
         plt.figure(figsize=(6, 4))
@@ -206,10 +209,10 @@ def analyze_anomaly(ratios: Dict[str, float]) -> Tuple[float, bool, List[Dict[st
         
     return anomaly_score, is_anomaly, drivers, chart_path
 
-def evaluate_financial_health(stmt: Dict[str, Any]) -> Dict[str, Any]:
+def evaluate_financial_health(stmt: Dict[str, Any], identifier: str = "") -> Dict[str, Any]:
     """Runs the complete solvency analysis and anomaly engine."""
     ratios = compute_ratios_from_statement(stmt)
-    anomaly_score, is_anomaly, drivers, chart_path = analyze_anomaly(ratios)
+    anomaly_score, is_anomaly, drivers, chart_path = analyze_anomaly(ratios, identifier)
     
     # Traffic light scoring logic for Altman Z-Score
     sic = str(stmt.get("sic", ""))

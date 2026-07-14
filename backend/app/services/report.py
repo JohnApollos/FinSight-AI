@@ -15,7 +15,7 @@ from reportlab.lib.units import inch
 
 BENCHMARKS_PATH = "backend/data/benchmarks.json"
 
-def generate_comparison_chart(company_ratios: Dict[str, float], sector: str) -> str:
+def generate_comparison_chart(company_ratios: Dict[str, float], sector: str, identifier: str = "") -> str:
     """Generates a comparison bar chart: Company vs Sector Benchmarks."""
     # Load benchmarks
     try:
@@ -69,7 +69,10 @@ def generate_comparison_chart(company_ratios: Dict[str, float], sector: str) -> 
     plt.grid(axis="y", linestyle="--", alpha=0.5)
     plt.tight_layout()
     
-    chart_path = "backend/data/ratio_comparison.png"
+    if identifier:
+        chart_path = f"backend/data/temp/ratio_comparison_{identifier}.png"
+    else:
+        chart_path = "backend/data/ratio_comparison.png"
     os.makedirs(os.path.dirname(chart_path), exist_ok=True)
     plt.savefig(chart_path, dpi=300)
     plt.close()
@@ -288,8 +291,11 @@ def compile_pdf_report(
     story.append(dashboard_table)
     story.append(Spacer(1, 15))
     
+    # Extract unique identifier from the PDF output path
+    identifier = os.path.basename(output_pdf_path).replace(".pdf", "")
+    
     # Embed Comparison Chart
-    chart_path = generate_comparison_chart(ratios, sector)
+    chart_path = generate_comparison_chart(ratios, sector, identifier)
     if os.path.exists(chart_path):
         story.append(Image(chart_path, width=5.5 * inch, height=3.2 * inch))
         
@@ -398,14 +404,12 @@ def compile_pdf_report(
     doc.build(story)
     print(f"PDF report compiled successfully at {output_pdf_path}")
     
-    # Cleanup chart images from temp folder
-    for path in [chart_path, "backend/data/ratio_comparison.png"]:
-        if os.path.exists(path):
-            try:
-                # Keep them if needed for web view, or cleanup
-                pass
-            except Exception:
-                pass
+    # Cleanup comparison chart from temp folder since it is embedded in the PDF
+    if chart_path and os.path.exists(chart_path) and "temp" in chart_path:
+        try:
+            os.remove(chart_path)
+        except Exception as cleanup_err:
+            print(f"Warning: Failed to clean up temp comparison chart: {cleanup_err}")
 
 if __name__ == "__main__":
     # Test compilation

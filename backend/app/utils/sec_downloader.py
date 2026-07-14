@@ -46,6 +46,21 @@ TAG_MAPS = {
     ],
     "current_liabilities": [
         "LiabilitiesCurrent"
+    ],
+    "cash": [
+        "CashAndCashEquivalentsAtCarryingValue",
+        "CashAndCashEquivalents",
+        "Cash"
+    ],
+    "inventory": [
+        "InventoryNet",
+        "Inventories",
+        "Inventory"
+    ],
+    "accounts_receivable": [
+        "AccountsReceivableNetCurrent",
+        "AccountsAndNotesReceivableNet",
+        "Receivables"
     ]
 }
 
@@ -158,7 +173,8 @@ def download_and_parse_sec_data(target_count_per_sic: int = 45):
     csv_columns = [
         "cik", "company_name", "sic", "year", 
         "revenue", "net_income", "assets", "liabilities", 
-        "equity", "retained_earnings", "working_capital"
+        "equity", "retained_earnings", "working_capital",
+        "cash", "inventory", "accounts_receivable"
     ]
     
     records_written = 0
@@ -194,6 +210,11 @@ def download_and_parse_sec_data(target_count_per_sic: int = 45):
                 current_assets = extract_fact_value(facts, TAG_MAPS["current_assets"], year)
                 current_liabilities = extract_fact_value(facts, TAG_MAPS["current_liabilities"], year)
                 
+                # Check cash, inventory, receivables
+                cash = extract_fact_value(facts, TAG_MAPS["cash"], year)
+                inventory = extract_fact_value(facts, TAG_MAPS["inventory"], year)
+                accounts_receivable = extract_fact_value(facts, TAG_MAPS["accounts_receivable"], year)
+                
                 # If total assets is missing, we cannot calculate ratios
                 if assets is None:
                     continue
@@ -202,6 +223,9 @@ def download_and_parse_sec_data(target_count_per_sic: int = 45):
                 net_income = net_income if net_income is not None else 0.0
                 revenue = revenue if revenue is not None else 0.0
                 liabilities = liabilities if liabilities is not None else 0.0
+                cash = cash if cash is not None else 0.0
+                inventory = inventory if inventory is not None else 0.0
+                accounts_receivable = accounts_receivable if accounts_receivable is not None else 0.0
                 
                 # If equity is missing, calculate as Assets - Liabilities
                 if equity is None:
@@ -228,7 +252,10 @@ def download_and_parse_sec_data(target_count_per_sic: int = 45):
                     "liabilities": liabilities,
                     "equity": equity,
                     "retained_earnings": retained_earnings,
-                    "working_capital": working_capital
+                    "working_capital": working_capital,
+                    "cash": cash,
+                    "inventory": inventory,
+                    "accounts_receivable": accounts_receivable
                 }
                 
                 writer.writerow(record)

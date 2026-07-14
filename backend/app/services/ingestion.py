@@ -154,6 +154,7 @@ def regex_extract_financials(text: str) -> Dict[str, Any]:
         return 0.0
 
     results["revenue"] = extract_value_for_keywords(["total revenue", "revenue", "turnover", "sales", "total sales"])
+    results["expenses"] = extract_value_for_keywords(["total expenses", "operating expenses", "total costs", "expenses", "total operating expenses"])
     results["net_income"] = extract_value_for_keywords(["net income", "net profit", "profit for the year", "profit (loss) for the year", "net loss"])
     results["assets"] = extract_value_for_keywords(["total assets", "assets"])
     results["liabilities"] = extract_value_for_keywords(["total liabilities", "liabilities"])
