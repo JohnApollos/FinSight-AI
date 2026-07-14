@@ -321,6 +321,15 @@ def compile_pdf_report(
     story.append(Paragraph("AI-Generated Risk Narrative & Solvency Outlook", h1_style))
     
     # Format and append Narrative sections
+    if isinstance(narrative, list):
+        parts = []
+        for item in narrative:
+            if isinstance(item, dict) and "text" in item:
+                parts.append(str(item["text"]))
+        narrative = "\n\n".join(parts) if parts else str(narrative)
+    else:
+        narrative = str(narrative)
+        
     sections = narrative.split("### ")
     for sec in sections:
         if not sec.strip():

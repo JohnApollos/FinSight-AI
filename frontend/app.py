@@ -324,7 +324,17 @@ if uploaded_file is not None:
                     st.divider()
                     
                     # Split narrative by sections and render nicely
-                    sec_blocks = result["narrative"].split("### ")
+                    narrative_val = result.get("narrative", "")
+                    if isinstance(narrative_val, list):
+                        parts = []
+                        for item in narrative_val:
+                            if isinstance(item, dict) and "text" in item:
+                                parts.append(str(item["text"]))
+                        narrative_val = "\n\n".join(parts) if parts else str(narrative_val)
+                    else:
+                        narrative_val = str(narrative_val)
+                        
+                    sec_blocks = narrative_val.split("### ")
                     for block in sec_blocks:
                         if not block.strip():
                             continue
