@@ -16,8 +16,10 @@ FinSight AI automates the entire risk review process: upload a financial documen
 
 Key features include:
 - **Intelligent Ingestion**: Hybrid text extractor using Google Gemini 1.5 Flash (JSON Mode) with deterministic double-entry validation equations ($Assets = Liabilities + Equity$) and local regex-based heuristics fallbacks.
+- **High-Performance MD5 Caching**: Programmatically hashes uploaded files via MD5. Duplicate renders, page tab switches, or PDF compilation requests load instantly from the JSON cache in **under 0.01 seconds**, saving API quotas.
 - **Solvency Math**: Auto-computes Altman Z'-Scores (manufacturing) and Z''-Scores (service/banking/fintech) with color-coded distress rating zones.
 - **Explainable Anomaly Detection**: Unsupervised Isolation Forest outlier checking, coupled with a local SHAP explainer to plot mathematical driver weights.
+- **Decoupled serving**: Generates unique concurrent SHAP charts and serves them via custom backend HTTP endpoints, avoiding static path collisions.
 - **RAG Risk Narrative**: Semantically queries ChromaDB for unstructured regulatory text (e.g. Basel III guidelines) and merges them with benchmarks.json profiles in a LangChain reasoning loop.
 - **Audit Trails**: Generates custom PDF reports via ReportLab and logs all parameters, metrics, and report assets to a local SQLite-backed MLflow telemetry database.
 

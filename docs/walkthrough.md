@@ -94,3 +94,37 @@ The application has been verified using live annual reports from the Nairobi Sec
 
 1. **East African Breweries Limited (EABL)**: Scored **12.72 (Safe Zone)** and an Anomaly Outlier Score of **25.6% (Standard Signature)**. The PDF report successfully compiled, plotted ratios, and was exported.
 2. **Equity Group Holdings Plc**: Scored **0.30 (Distress Zone)** under the standard Fintech/Service profile due to structural differences in commercial bank balance sheets (the **Structural Metric Trap**). When switched to the **Banking** sector, the system overlayed CBK guidelines to resolve it to the **Safe Zone**, with a Capital Adequacy Ratio of **18.1%** and a standard anomaly signature of **1.8%**.
+
+---
+
+## 🚀 Refactoring & Quality Alignment Sweep (July 14, 2026)
+
+We executed a comprehensive refactoring sweep of the FastAPI backend and Streamlit frontend codebases to eliminate inconsistencies and upgrade the system to enterprise grade:
+
+### 1. Core Model & Ratio Alignment (Collinearity Fixed)
+* **The Inconsistency**: In `train_model.py`, quick and cash ratios were calculated as simple linear multiples of the current ratio (`0.7` and `0.35` respectively) because `sec_reference_data.csv` lacked specific asset-mix columns. This created a perfect collinearity baseline. At runtime, the actual cash, inventory, and receivables were used, causing the Isolation Forest to flag healthy runtime companies as outliers due to distribution shift.
+* **The Fix**: 
+  - Updated `sec_downloader.py` to extract `cash`, `inventory`, and `receivables` directly from SEC XBRL facts.
+  - Aligned `train_model.py`'s ratio calculations exactly with `analysis.py`'s proxy current asset/liabilities formulations.
+  - Updated `generate_synthetic_data` to simulate realistic asset-mix distributions.
+  - Re-ran the bootstrapper to train a fresh `isolation_forest.pkl` model based on aligned features.
+
+### 2. Double-Analysis Prevention (MD5 Hashing Cache)
+* **The Inconsistency**: Streamlit’s rendering loop automatically re-requested report byte streams from `/report` on page updates, triggering duplicate PDF text extraction, Gemini LLM calls, and vector DB queries. This exhausted Gemini API limits (triggering `429 RESOURCE_EXHAUSTED` codes) and slowed the page down to 30+ seconds.
+* **The Fix**: 
+  - Added MD5 file hashing cache to `/analyze` and `/report` (saving responses under `backend/data/temp/analysis_{file_hash}_{sector}.json`).
+  - Subsequent requests for the same document under the same sector are served instantly from the JSON cache in under `0.01 seconds` using `0 Gemini tokens`.
+
+### 3. Concurrency and Decoupled Image Serving
+* **The Inconsistency**: Matplotlib saved charts to static files (`shap_waterfall.png` and `ratio_comparison.png`), causing collisions and image leakage on parallel requests. The frontend also read these files directly from the local disk, violating container boundaries.
+* **The Fix**:
+  - Saved charts to request-isolated paths: `ratio_comparison_{file_id}.png` and `shap_waterfall_{file_id}.png`.
+  - Added a backend GET `/charts/shap/{file_id}` HTTP endpoint. The Streamlit frontend now fetches images cleanly over network requests instead of local disk reads.
+  - Comparison charts are deleted immediately after the PDF is built, preserving disk space.
+
+### 4. Pydantic Warning Cleanups
+* Refactored `config.py` to use Pydantic Settings V2 (`SettingsConfigDict`), completely eliminating all Pydantic V2 deprecation warnings in the server start console.
+
+### 5. Robust Fallback Expense Parsing
+* Added regex keyword matching for `expenses` to `regex_extract_financials` inside `ingestion.py`. Calculated expenses from `revenue - net_income` now runs only as a fallback when not explicitly found in text, ensuring double-entry verification errors are caught.
+

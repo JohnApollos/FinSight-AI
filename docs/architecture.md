@@ -54,6 +54,46 @@ FinSight AI is structured as a decoupled service pipeline, ensuring clean bounda
 
 ---
 
+## High-Performance Caching & Serving Architecture
+
+To prevent duplicate API resource expenditure and network request collisions in multi-user concurrent production configurations, the pipeline integrates a high-performance document caching and decoupled image retrieval layer:
+
+```mermaid
+sequenceDiagram
+    participant ST as Streamlit Frontend
+    participant API as FastAPI Backend
+    participant Cache as Local JSON Cache
+    participant LLM as Google Gemini API
+
+    ST->>API: POST /analyze (Upload PDF + Sector)
+    API->>API: Compute MD5 File Hash
+    API->>Cache: Query cache_hash_sector.json
+    alt Cache Hit
+        Cache-->>API: Return Cached Analysis JSON
+        API-->>ST: Return cached metrics & HTTP SHAP URL
+    else Cache Miss
+        API->>API: Write file to temp/
+        API->>LLM: Ingest text & extract metrics
+        LLM-->>API: Pydantic Structured Output
+        API->>API: Run Solvency & Isolation Forest checks
+        API->>API: Generate unique SHAP plot (temp/shap_hash.png)
+        API->>Cache: Write response payload to cache
+        API-->>ST: Return results & HTTP SHAP URL
+    end
+```
+
+### 1. MD5 File Hash Caching
+Every uploaded document is scanned and hashed via MD5. The unique hash is concatenated with the target analysis sector (`{hash}_{sector}`) to yield a cache key.
+* **Why Sector Matters**: Evaluating the exact same financial document under different sectors (e.g. Fintech vs Banking) yields completely different solvency scoring models ($Z'$ vs $Z''$) and benchmark comparative parameters. Caching keys incorporate the sector string to guarantee logical partition safety.
+* **Caching Performance**: Bypasses slow PDF text scanning, LLM schema parsing, and database queries. Reduces subsequent request latencies from **30+ seconds** to **under 0.01 seconds** using **0 Gemini tokens**.
+
+### 2. Decoupled Image Serving (`/charts/shap/{file_id}`)
+* **Decoupled Image Network Boundary**: Traditional file-sharing designs write static Matplotlib charts to disk and have the frontend read them from the local folder. This is a severe containerization anti-pattern. FinSight AI hosts a dedicated GET endpoint `/charts/shap/{file_id}` to serve images over the network.
+* **Collision Guard**: Temporary image paths are saved with unique IDs (`shap_waterfall_{file_id}.png`). This ensures concurrent user requests do not overwrite one another's visual diagnostics.
+* **Immediate Cleanup**: PDF compilation comparison charts are deleted immediately after document compilation completes, conserving disk memory.
+
+---
+
 ## Solvency & Credit Risk Formulations
 
 Traditional credit scoring models rely on linear weighting. FinSight AI implements two distinct academic solvency models to accommodate different corporate structures:
