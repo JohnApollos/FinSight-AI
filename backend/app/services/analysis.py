@@ -49,21 +49,28 @@ def compute_ratios_from_statement(stmt: Dict[str, Any]) -> Dict[str, float]:
     receivables = stmt.get("accounts_receivable", 0.0)
     inventory = stmt.get("inventory", 0.0)
     interest_expense = stmt.get("interest_expense", 0.0)
+    borrowings = stmt.get("borrowings", 0.0)
     
-    # Establish proxy current items if missing (for non-financials)
-    current_assets = cash + receivables + inventory
-    if current_assets == 0.0:
-        # Default proxy current assets to 30% of total assets
-        current_assets = assets * 0.30
-        
-    current_liabilities = current_assets - working_capital
-    if current_liabilities <= 0.0:
-        current_liabilities = max(1.0, liabilities * 0.40) # Proxy current liabilities
-        current_assets = working_capital + current_liabilities
+    sic = str(stmt.get("sic", "")).lower()
+    is_financial = "insurance" in sic or "banking" in sic or "bank" in sic or "credit" in sic or sic in {"6311", "6321", "6411", "6022", "6159"}
+    
+    # Establish proxy current items if missing
+    if is_financial:
+        # Insurance & Banking use liquid assets (cash/securities/deposits) and proxy short-term obligations
+        current_assets = cash + receivables
+        current_liabilities = max(1.0, liabilities * 0.20) # 20% of liabilities as short-term claims/deposit needs
+    else:
+        current_assets = cash + receivables + inventory
+        if current_assets == 0.0:
+            current_assets = assets * 0.30
+        current_liabilities = current_assets - working_capital
+        if current_liabilities <= 0.0:
+            current_liabilities = max(1.0, liabilities * 0.40)
+            current_assets = working_capital + current_liabilities
         
     # Liquidity
     current_ratio = np.clip(current_assets / current_liabilities, 0.1, 10.0)
-    quick_ratio = np.clip((current_assets - inventory) / current_liabilities, 0.1, 10.0)
+    quick_ratio = np.clip((current_assets - (0.0 if is_financial else inventory)) / current_liabilities, 0.1, 10.0)
     cash_ratio = np.clip(cash / current_liabilities, 0.05, 10.0)
     
     # Profitability
@@ -77,9 +84,10 @@ def compute_ratios_from_statement(stmt: Dict[str, Any]) -> Dict[str, float]:
         ebit = net_income * 1.30
     operating_margin = ebit / revenue
     
-    # Leverage
-    debt_to_equity = liabilities / equity
-    debt_to_assets = liabilities / assets
+    # Leverage (Use borrowings for financial debt if it is a financial institution)
+    leverage_denominator = borrowings if is_financial else liabilities
+    debt_to_equity = leverage_denominator / equity
+    debt_to_assets = leverage_denominator / assets
     interest_coverage = ebit / max(1.0, interest_expense) if interest_expense > 0 else 100.0
     
     # Efficiency
@@ -93,8 +101,9 @@ def compute_ratios_from_statement(stmt: Dict[str, Any]) -> Dict[str, float]:
     x2 = stmt.get("retained_earnings", 0.0) / assets
     # X3 = EBIT / Total Assets
     x3 = ebit / assets
-    # X4 = Book Value of Equity / Total Liabilities
-    x4 = equity / max(1.0, liabilities)
+    # X4 = Book Value of Equity / Total Liabilities (or borrowings for financial firms)
+    # Clip x4 to 10.0 to prevent overflow division by zero when borrowings are 0
+    x4 = np.clip(equity / max(1.0, leverage_denominator), 0.0, 10.0)
     # X5 = Revenue / Total Assets
     x5 = revenue / assets
     
@@ -119,6 +128,7 @@ def compute_ratios_from_statement(stmt: Dict[str, Any]) -> Dict[str, float]:
         "altman_z_classic": float(z_classic),
         "altman_z_service": float(z_service)
     }
+
 
 def analyze_anomaly(ratios: Dict[str, float], identifier: str = "") -> Tuple[float, bool, List[Dict[str, Any]], str]:
     """
@@ -214,20 +224,13 @@ def evaluate_financial_health(stmt: Dict[str, Any], identifier: str = "") -> Dic
     ratios = compute_ratios_from_statement(stmt)
     anomaly_score, is_anomaly, drivers, chart_path = analyze_anomaly(ratios, identifier)
     
-    # Traffic light scoring logic for Altman Z-Score
-    sic = str(stmt.get("sic", ""))
+    # Traffic light scoring logic for Altman Z-Score and Sector Overrides
+    sic = str(stmt.get("sic", "")).lower()
     
-    # Select default Altman Z model based on industry
-    # Banking (6022), credit agencies (6159), personal credit (6141), insurance (6311, 6321, 6411), software (7372)
-    # Banks, insurance, software, and credit institutions use the Service Z'' model.
-    # Manufacturing uses the Classic Z model.
-    is_service = sic != "Manufacturing" and sic not in {"Manufacturing", "Auto", "Cement"}
-    
+    is_service = "manufacturing" not in sic and sic not in {"manufacturing", "auto", "cement"}
     z_score = ratios["altman_z_service"] if is_service else ratios["altman_z_classic"]
     
-    # Solvency zones:
-    # Service model (Z''): Safe > 2.90, Grey 1.23 - 2.90, Distress < 1.23
-    # Classic model (Z): Safe > 2.90, Grey 1.23 - 2.90 (private model thresholds)
+    # Default scoring logic based on standard Z-score thresholds
     if z_score >= 2.90:
         zone = "Safe (Low Risk)"
         status_color = "green"
@@ -238,6 +241,44 @@ def evaluate_financial_health(stmt: Dict[str, Any], identifier: str = "") -> Dic
         zone = "Distress Zone (High Risk)"
         status_color = "red"
         
+    # Apply high-fidelity overrides for Banking and Insurance regulatory frameworks
+    model_used = "Altman Z'' Service Model" if is_service else "Altman Z' Private Manufacturing Model"
+    
+    if "insurance" in sic or sic in {"6311", "6321", "6411"}:
+        solv_ratio = stmt.get("solvency_ratio", 0.0)
+        # Handle decimal (e.g., 1.50) vs percentage (e.g., 150.0)
+        if 0.0 < solv_ratio <= 5.0:
+            solv_ratio = solv_ratio * 100.0
+            
+        if solv_ratio >= 100.0:
+            zone = "Safe (Low Risk)"
+            status_color = "green"
+            model_used = "Solvency Ratio (IRA Standard)"
+        elif solv_ratio > 0.0:
+            zone = "Distress Zone (High Risk)"
+            status_color = "red"
+            model_used = "Solvency Ratio (IRA Standard)"
+        else:
+            # Fallback to adjusted Z'' score
+            model_used = "Adjusted Altman Z'' (Insurance Proxy)"
+            
+    elif "banking" in sic or "bank" in sic or sic in {"6022", "6159"}:
+        car = stmt.get("capital_adequacy_ratio", 0.0)
+        if 0.0 < car <= 1.0:
+            car = car * 100.0
+            
+        if car >= 14.5: # CBK threshold
+            zone = "Safe (Low Risk)"
+            status_color = "green"
+            model_used = "Capital Adequacy (CBK Standard)"
+        elif car > 0.0:
+            zone = "Distress Zone (High Risk)"
+            status_color = "red"
+            model_used = "Capital Adequacy (CBK Standard)"
+        else:
+            # Fallback to adjusted Z'' score
+            model_used = "Adjusted Altman Z'' (Banking Proxy)"
+            
     return {
         "ratios": ratios,
         "anomaly": {
@@ -250,7 +291,7 @@ def evaluate_financial_health(stmt: Dict[str, Any], identifier: str = "") -> Dic
             "score": z_score,
             "zone": zone,
             "status_color": status_color,
-            "model_used": "Altman Z'' Service Model" if is_service else "Altman Z' Private Manufacturing Model"
+            "model_used": model_used
         }
     }
 

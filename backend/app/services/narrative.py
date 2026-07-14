@@ -322,11 +322,30 @@ def generate_risk_narrative(
                 temperature=0.3
             )
             
+            # Add sector-specific guidelines to the prompt template
+            sector_guidelines = ""
+            if "insurance" in sector.lower():
+                sector_guidelines = (
+                    "CRITICAL FOR INSURANCE SECTOR:\n"
+                    "- The target company is an insurer regulated under the Kenyan Insurance Regulatory Authority (IRA) Risk-Based Capital framework, not European Solvency II.\n"
+                    "- Do NOT refer to Solvency II standards. Cite the IRA framework instead.\n"
+                    "- Note that for insurers, total liabilities are dominated by policyholder insurance contract liabilities (reserves) which are matched against investments (like government securities), NOT commercial borrowings.\n"
+                    "- If financial borrowings are zero, the company has no interest-bearing debt. Do not mistake policyholder claims obligations for financial leverage risk.\n\n"
+                )
+            elif "banking" in sector.lower() or "bank" in sector.lower():
+                sector_guidelines = (
+                    "CRITICAL FOR BANKING SECTOR:\n"
+                    "- The target company is a commercial bank regulated under the Central Bank of Kenya (CBK) guidelines.\n"
+                    "- Capital adequacy is measured by the Capital Adequacy Ratio (CAR), with a CBK statutory minimum of 14.5%.\n"
+                    "- Leverage is represented by financial borrowings, not customer deposits. Customer deposits are structural assets-liabilities match variables, not solvency leverage risk.\n\n"
+                )
+
             prompt_template = PromptTemplate(
-                input_variables=["company", "sector", "ratios", "solvency", "anomaly", "benchmark", "regulatory_context"],
+                input_variables=["company", "sector", "ratios", "solvency", "anomaly", "benchmark", "regulatory_context", "sector_guidelines"],
                 template=(
                     "You are a Senior Credit Analyst and Risk Officer at a development finance institution.\n"
                     "Your job is to write a plain-English risk narrative for a financial statement review.\n\n"
+                    "{sector_guidelines}"
                     "### Company Name: {company}\n"
                     "### Industry Sector: {sector}\n\n"
                     "### Calculated Company Ratios:\n{ratios}\n\n"
@@ -337,11 +356,11 @@ def generate_risk_narrative(
                     "Generate a structured credit risk report containing these EXACT sections:\n"
                     "### EXECUTIVE SUMMARY\n"
                     "Provide a 2-paragraph overview of the company's financial status and overall credit risk rating. "
-                    "Make sure to reference the company's specific ratios and how they align with the retrieved regulatory guidelines (e.g., Basel III capital requirements or Solvency II benchmarks if applicable).\n\n"
+                    "Make sure to reference the company's specific ratios and how they align with the retrieved regulatory guidelines (e.g., Basel III capital requirements or local regulatory benchmarks if applicable).\n\n"
                     "### KEY STRENGTHS\n"
                     "Identify 2-3 specific ratios where the company beats the sector benchmark. Explain why this is good.\n\n"
                     "### KEY CONCERNS\n"
-                    "Identify 2-3 specific ratios where the company underperforms the benchmark, or mention Altman Z-Score distress/anomaly flags. Explain the risks in terms of regulatory capital or debt service.\n\n"
+                    "Identify 2-3 specific ratios where the company underperforms the benchmark, or mention solvency/anomaly flags. Explain the risks in terms of regulatory capital or debt service.\n\n"
                     "### RECOMMENDATION\n"
                     "Provide a specific advisory recommendation regarding loan approval, covenant constraints, or mitigation strategies.\n\n"
                     "Maintain a formal, analytical credit analyst tone. Do not mention API keys or model names."
@@ -349,7 +368,7 @@ def generate_risk_narrative(
             )
             
             ratios_formatted = json.dumps(ratios, indent=2)
-            solvency_formatted = f"Altman Z-Score: {solvency.get('score'):.2f} | Zone: {solvency.get('zone')} ({solvency.get('model_used')})"
+            solvency_formatted = f"Solvency Index/CAR: {solvency.get('score'):.2f} | Zone: {solvency.get('zone')} ({solvency.get('model_used')})"
             anomaly_formatted = f"Anomaly Score: {anomaly.get('score'):.1f}% | Outlier: {anomaly.get('is_anomaly')} | Top Drivers: {anomaly.get('drivers')}"
             
             prompt = prompt_template.format(
@@ -359,7 +378,8 @@ def generate_risk_narrative(
                 solvency=solvency_formatted,
                 anomaly=anomaly_formatted,
                 benchmark=benchmark_profile,
-                regulatory_context=regulatory_context
+                regulatory_context=regulatory_context,
+                sector_guidelines=sector_guidelines
             )
             
             response = llm.invoke(prompt)

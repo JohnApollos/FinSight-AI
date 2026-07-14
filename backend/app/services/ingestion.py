@@ -22,10 +22,13 @@ class FinancialMetricsSchema(BaseModel):
     equity: float = Field(description="Total shareholders' equity")
     retained_earnings: float = Field(default=0.0, description="Retained earnings or accumulated deficit")
     working_capital: float = Field(default=0.0, description="Working capital (Current Assets - Current Liabilities). If current items are not reported or it's a bank/insurance, default to 0.0.")
-    cash: float = Field(default=0.0, description="Cash and cash equivalents")
+    cash: float = Field(default=0.0, description="Cash and cash equivalents. For banks and insurance companies, this MUST also include short-term deposits, treasury bills, and liquid government securities held to back claims/deposits.")
     accounts_receivable: float = Field(default=0.0, description="Accounts receivable or trade receivables")
     inventory: float = Field(default=0.0, description="Inventory or stock")
     interest_expense: float = Field(default=0.0, description="Interest expense or finance costs")
+    borrowings: float = Field(default=0.0, description="Total interest-bearing financial borrowings or debt (loans, bonds, lease liabilities). If zero or not reported, default to 0.0. Exclude insurance contract liabilities/claims reserves/policyholder liabilities.")
+    capital_adequacy_ratio: float = Field(default=0.0, description="Capital Adequacy Ratio (CAR) as a percentage (e.g. 18.1 or 0.181). Only applicable for banks. Default to 0.0 if not a bank or not reported.")
+    solvency_ratio: float = Field(default=0.0, description="Solvency Capital Requirement (SCR) ratio or Solvency Ratio as a percentage (e.g. 150.0 or 1.50). Only applicable for insurance companies. Default to 0.0 if not an insurer or not reported.")
 
 def extract_text_from_pdf(file_path: str) -> str:
     """Extracts text from a PDF file using PyMuPDF."""
@@ -165,6 +168,9 @@ def regex_extract_financials(text: str) -> Dict[str, Any]:
     results["accounts_receivable"] = extract_value_for_keywords(["accounts receivable", "trade receivables", "receivables"])
     results["inventory"] = extract_value_for_keywords(["inventory", "inventories", "stock"])
     results["interest_expense"] = extract_value_for_keywords(["interest expense", "finance costs", "interest payable"])
+    results["borrowings"] = extract_value_for_keywords(["total borrowings", "borrowings", "interest-bearing borrowings", "total debt", "financial debt"])
+    results["capital_adequacy_ratio"] = extract_value_for_keywords(["capital adequacy ratio", "car ratio", "core capital adequacy"])
+    results["solvency_ratio"] = extract_value_for_keywords(["solvency ratio", "solvency capital requirement ratio", "scr ratio"])
     
     # Calculate expenses if missing
     if results["revenue"] > 0 and results["net_income"] != 0 and results["expenses"] == 0:
