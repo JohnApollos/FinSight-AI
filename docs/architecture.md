@@ -92,6 +92,18 @@ Every uploaded document is scanned and hashed via MD5. The unique hash is concat
 * **Collision Guard**: Temporary image paths are saved with unique IDs (`shap_waterfall_{file_id}.png`). This ensures concurrent user requests do not overwrite one another's visual diagnostics.
 * **Immediate Cleanup**: PDF compilation comparison charts are deleted immediately after document compilation completes, conserving disk memory.
 
+### 3. Thread-Safe Model RAM Caching
+* **RAM Caching**: In a production environment, opening and loading a scikit-learn pickle model file from disk on every incoming user transaction slows down API throughput.
+* **The Optimization**: The Isolation Forest model is loaded dynamically on first request and cached in-memory (`_MODEL_CACHE`). Subsequent evaluation requests fetch the model instantly from RAM, eliminating disk I/O bottlenecks and ensuring high concurrent request throughput.
+
+### 4. SQLite Write-Ahead Logging (WAL) Concurrency
+* **Multi-User Lock Protection**: Multiple users submitting documents simultaneously can trigger database file locks on SQLite (the engine backing MLflow telemetry runs).
+* **The Optimization**: FinLens AI runs initialization code at application startup to enable **Write-Ahead Logging (WAL)** and sets busy timeout retries to 30 seconds. This allows multiple threads to read concurrently and write without blocking, preventing `database is locked` runtime failures.
+
+### 5. Production Rotating Logging
+* **Disk Space Conservation**: Run logs can grow rapidly and deplete server storage if left uncontrolled.
+* **The Optimization**: Logs are handled via a custom `RotatingFileHandler` configured at `backend/app/utils/logger.py`. It limits log files to 5MB, maintaining a maximum backup history of 3 files (rolling over automatically).
+
 ---
 
 ## Solvency & Credit Risk Formulations

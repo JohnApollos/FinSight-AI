@@ -14,5 +14,7 @@ class Settings(BaseSettings):
     SEC_USER_AGENT: str = "FinLensAI-DevUser student_dev@finlensai.local"
     HOST: str = "127.0.0.1"
     PORT: int = 8000
+    ALLOWED_ORIGINS: list[str] = ["*"]
+    LOG_LEVEL: str = "INFO"
 
 settings = Settings()

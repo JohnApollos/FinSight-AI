@@ -7,8 +7,28 @@ matplotlib.use("Agg") # Prevent GUI window popups in headless environments
 import matplotlib.pyplot as plt
 import shap
 from typing import Dict, Any, List, Tuple
+from backend.app.utils.logger import setup_logger
 
+logger = setup_logger("analysis_service")
 MODEL_PATH = "backend/models/isolation_forest.pkl"
+_MODEL_CACHE = None
+
+def get_anomaly_model():
+    global _MODEL_CACHE
+    if _MODEL_CACHE is not None:
+        return _MODEL_CACHE
+    if os.path.exists(MODEL_PATH):
+        try:
+            with open(MODEL_PATH, "rb") as f:
+                _MODEL_CACHE = pickle.load(f)
+            logger.info("Successfully loaded Isolation Forest model into RAM cache.")
+            return _MODEL_CACHE
+        except Exception as e:
+            logger.error(f"Failed to load model from {MODEL_PATH}: {e}")
+    else:
+        logger.warning(f"Isolation Forest model file not found at {MODEL_PATH}")
+    return None
+
 
 # Ratios list
 FEATURES = [
@@ -145,13 +165,11 @@ def analyze_anomaly(ratios: Dict[str, float], identifier: str = "") -> Tuple[flo
     drivers = []
     chart_path = ""
     
-    if not os.path.exists(MODEL_PATH):
-        print(f"Warning: Isolation Forest model not found at {MODEL_PATH}. Anomaly detection will be skipped.")
+    model = get_anomaly_model()
+    if model is None:
         return anomaly_score, is_anomaly, drivers, chart_path
 
     try:
-        with open(MODEL_PATH, "rb") as f:
-            model = pickle.load(f)
             
         # Predict: 1 = normal, -1 = anomaly
         pred = model.predict(X)[0]

@@ -5,6 +5,7 @@ import json
 import uuid
 import shutil
 import hashlib
+import sqlite3
 from typing import Dict, Any, List
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
@@ -18,10 +19,27 @@ app_dir = os.path.dirname(current_dir)
 sys.path.insert(0, os.path.dirname(current_dir))
 
 from backend.app.config import settings
+from backend.app.utils.logger import setup_logger
+
+# Initialize Logger
+logger = setup_logger("finlens_api")
+
 from backend.app.services.ingestion import extract_financial_metrics
 from backend.app.services.analysis import evaluate_financial_health
 from backend.app.services.narrative import generate_risk_narrative
 from backend.app.services.report import compile_pdf_report
+
+# Optimize SQLite with WAL (Write-Ahead Logging) to prevent locks during concurrent access
+try:
+    db_path = "backend/data/mlflow.db"
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    conn = sqlite3.connect(db_path)
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute("PRAGMA synchronous=NORMAL;")
+    conn.close()
+    logger.info("SQLite database optimized successfully with WAL (Write-Ahead Logging) mode.")
+except Exception as db_err:
+    logger.warning(f"Could not optimize SQLite with WAL mode: {db_err}")
 
 # Initialize FastAPI
 app = FastAPI(
@@ -33,7 +51,7 @@ app = FastAPI(
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -50,9 +68,9 @@ os.makedirs(TEMP_DIR, exist_ok=True)
 try:
     mlflow.set_tracking_uri(settings.MLFLOW_TRACKING_URI)
     mlflow.set_experiment("FinLens_AI_Document_Analysis")
-    print(f"MLflow initialized with tracking URI: {settings.MLFLOW_TRACKING_URI}")
+    logger.info(f"MLflow initialized with tracking URI: {settings.MLFLOW_TRACKING_URI}")
 except Exception as ml_err:
-    print(f"Warning: Failed to initialize MLflow: {ml_err}")
+    logger.warning(f"Failed to initialize MLflow: {ml_err}")
 
 # In-memory metrics fallback & persistence
 def load_history() -> List[Dict[str, Any]]:
